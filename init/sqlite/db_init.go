@@ -12,14 +12,20 @@ import (
 var sqlitePath = filepath.Join("internal", "sqlitedb", "sqlite_database.db")
 
 func InitiateDatabase() string {
+	var msg string
+	var sqliteDB *sqlx.DB
+
 	if !fileExist(sqlitePath) {
 		createSQLiteDB()
-		sqliteDB, _ := sqlx.Open("sqlite3", sqlitePath)
-		createSQLiteTable(createMainTable)
+		sqliteDB, _ = sqlx.Open("sqlite3", sqlitePath)
 		defer sqliteDB.Close()
-		return "SQLite database created"
+	} else {
+		msg = "SQLite database already exists"
 	}
-	return "SQLite database already exists"
+
+	createSQLiteTable(createMainTable)
+	msg = "SQLite database created"
+	return msg
 }
 
 //Check if the database already exists, will not check for tables
@@ -39,7 +45,6 @@ func createSQLiteDB() {
 		log.Fatal(err.Error())
 	}
 	defer file.Close()
-	log.Println("SQLite-database.db created")
 }
 
 //Creates the tables in the SQLite
@@ -76,11 +81,12 @@ var createMainTable = `CREATE TABLE IF NOT EXISTS event_buffer(
 		  event INTEGER NOT NULL,
 		  subtitle TEXT,
 		  body TEXT,
-		  template INTEGER DEFAULT 1,
+		  template INTEGER DEFAULT 0,
 		  created DATETIME DEFAULT CURRENT_TIMESTAMP,
 		  sent DATETIME,
 		FOREIGN KEY(sender) REFERENCES mail_address(id),
-		FOREIGN KEY(receiver) REFERENCES mail_address(id)
+		FOREIGN KEY(receiver) REFERENCES mail_address(id),
+		FOREIGN KEY(event) REFERENCES msg_template(id)
 		);
 
 		CREATE TABLE IF NOT EXISTS mail_address(
@@ -88,7 +94,7 @@ var createMainTable = `CREATE TABLE IF NOT EXISTS event_buffer(
 		 mail_address TEXT NOT NULL,
 		 first_name TEXT,
 		 name TEXT,
-		 status INT NOT NULL DEFAULT 3, 
+		 status INT NOT NULL DEFAULT 0, 
 		 created DATETIME DEFAULT CURRENT_TIMESTAMP
 		);
 
@@ -99,4 +105,4 @@ var createMainTable = `CREATE TABLE IF NOT EXISTS event_buffer(
 		created DATETIME DEFAULT CURRENT_TIMESTAMP
 		);`
 
-//Status 1 = only sender, 2 = only receiver, 3 = both
+//Status 1 = only sender, 2 = only receiver, 0 = both

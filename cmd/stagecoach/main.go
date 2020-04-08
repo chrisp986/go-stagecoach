@@ -24,13 +24,46 @@ package main
 
 import (
 	"fmt"
+	"github.com/chrisp986/go-stagecoach/init/sqlite"
+	"github.com/chrisp986/go-stagecoach/pkg/database"
+	"github.com/jmoiron/sqlx"
+	"log"
+	"path/filepath"
 )
 
 func main() {
-	fmt.Println("->> gotifier v0.1")
-	fmt.Println("-----------------")
+	fmt.Println("->> Stagecoach v0.1")
+	fmt.Println("-------------------")
 
-	//msg := sqlite.InitiateDatabase()
-	//log.Println(msg)
+	msg := sqlite.InitiateDatabase()
+	log.Println(msg)
+
+	sqliteDB, err := sqlx.Connect("sqlite3", filepath.Join("internal", "sqlitedb", "sqlite_database.db"))
+	if err != nil {
+		log.Fatalf("Connection to database %v", err)
+	}
+	defer sqliteDB.Close()
+
+	log.Println("Connection to database established")
+
+	database.AddEvent(sqliteDB, database.EventBuffer{
+		Sender:   1,
+		Receiver: 3,
+		Event:    1,
+		Subtitle: "testsubtitle",
+		Body:     "testbody",
+	})
+
+	database.AddMailAddress(sqliteDB, database.MailAddress{
+		MailAddress: "cpeters986@gmail.com",
+		FirstName:   "",
+		Name:        "",
+		Status:      0,
+	})
+
+	database.AddMsgTemplate(sqliteDB, database.MsgTemplate{
+		MsgSubtitle: "",
+		MsgBody:     "",
+	})
 
 }

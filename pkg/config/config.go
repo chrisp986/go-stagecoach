@@ -27,7 +27,7 @@ type MailConfig struct {
 //GetConfig is used to read the config file that stores the database information
 func (d *DBConfig) ReadDBConfig() (dsn string) {
 
-	yamlFile, err := ioutil.ReadFile(filepath.Join("configs", "db_config.yaml"))
+	yamlFile, err := ioutil.ReadFile(filepath.Join("configs", "mail_config.yaml"))
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
 	}

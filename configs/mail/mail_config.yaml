@@ -1,0 +1,4 @@
+smtpServer: "smtp.gmail.com"
+loginname: "test@gmail.com"
+password: ""
+fromAddress: "test@gmail.com"
