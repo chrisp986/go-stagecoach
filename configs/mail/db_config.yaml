@@ -1,0 +1,13 @@
+smtpServer: "smtp.gmail.com"
+loginname: "cpeters986@gmail.com"
+password: ""
+fromAddress: "cpeters986@gmail.com"
+
+
+#user: "support"
+#password: "support"
+#dbname: "supdash_db"
+#ip: "127.0.0.1"
+#port: "3306"
+
+
