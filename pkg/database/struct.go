@@ -1,6 +1,7 @@
 package database
 
 type EventBuffer struct {
+	ID       uint32
 	UUID     uint32
 	Sender   uint16
 	Receiver uint16

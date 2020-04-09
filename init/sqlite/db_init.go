@@ -75,14 +75,15 @@ func createSQLiteTable(query string) {
 //SELECT event_buffer.uuid, event_buffer.subtitle, event_buffer.body, mail_address.mail_address, mail_address.first_name, mail_address.status FROM event_buffer INNER JOIN mail_address ON event_buffer.sender=mail_address.id WHERE mail_address.status='3';
 
 var createMainTable = `CREATE TABLE IF NOT EXISTS event_buffer(
-		  uuid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+		  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+          uuid INTEGER NOT NULL UNIQUE,
 		  sender INTEGER NOT NULL,
 		  receiver INTEGER NOT NULL,
 		  event INTEGER NOT NULL,
 		  subtitle TEXT,
 		  body TEXT,
 		  template INTEGER DEFAULT 0,
-		  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+		  created DATETIME DEFAULT (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW','localtime')),
 		  sent DATETIME,
 		FOREIGN KEY(sender) REFERENCES mail_address(id),
 		FOREIGN KEY(receiver) REFERENCES mail_address(id),
@@ -95,14 +96,14 @@ var createMainTable = `CREATE TABLE IF NOT EXISTS event_buffer(
 		 first_name TEXT,
 		 name TEXT,
 		 status INT NOT NULL DEFAULT 0, 
-		 created DATETIME DEFAULT CURRENT_TIMESTAMP
+		 created DATETIME DEFAULT (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW','localtime'))
 		);
 
 		CREATE TABLE IF NOT EXISTS msg_template(
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 		msg_subtitle TEXT NOT NULL,
 		msg_body TEXT NOT NULL,
-		created DATETIME DEFAULT CURRENT_TIMESTAMP
+		created DATETIME DEFAULT (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW','localtime'))
 		);`
 
 //Status 1 = only sender, 2 = only receiver, 0 = both

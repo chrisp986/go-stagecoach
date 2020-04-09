@@ -46,24 +46,30 @@ func main() {
 
 	log.Println("Connection to database established")
 
-	database.AddEvent(sqliteDB, database.EventBuffer{
-		Sender:   1,
-		Receiver: 3,
-		Event:    1,
-		Subtitle: "testsubtitle",
+	eb := database.EventBuffer{
+		UUID:     123456,
+		Sender:   3,
+		Receiver: 12,
+		Event:    0,
+		Subtitle: "testsub",
 		Body:     "testbody",
-	})
+		Template: 1,
+	}
 
-	database.AddMailAddress(sqliteDB, database.MailAddress{
-		MailAddress: "cpeters986@gmail.com",
-		FirstName:   "",
-		Name:        "",
+	eb.AddEvent(sqliteDB)
+
+	ma := database.MailAddress{
+		MailAddress: "test@test.com",
+		FirstName:   "Christian",
+		Name:        "Peters",
 		Status:      0,
-	})
+	}
+	ma.AddMailAddress(sqliteDB)
 
-	database.AddMsgTemplate(sqliteDB, database.MsgTemplate{
-		MsgSubtitle: "",
-		MsgBody:     "",
-	})
+	mt := database.MsgTemplate{
+		MsgSubtitle: "testsubtitle",
+		MsgBody:     "testbody",
+	}
+	mt.AddMsgTemplate(sqliteDB)
 
 }
