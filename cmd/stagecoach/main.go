@@ -42,14 +42,6 @@ func init() {
 	msg := sqlite.InitiateDatabase()
 	log.Println(msg)
 
-	//var err error
-	// Create a connection to the db
-	//sqliteDB, err = sqlx.Connect("sqlite3", filepath.Join("internal", "sqlitedb", "sqlite_database.db"))
-	//if err != nil {
-	//	log.Fatalf("Connection to db %v", err)
-	//}
-	//sqliteDB.SetMaxOpenConns(1)
-
 }
 
 func main() {

@@ -21,9 +21,9 @@ Gin - Implementation of REST API
 | Task           | Current Status | Finished | 
 |----------------|----------------|-----------|
 | Initialize SQLiteDB | done | :white_check_mark:
-| Access DB (CRUD)   | in progress | :heavy_check_mark:
-| REST API(gin)   | in progress | :heavy_check_mark:
-| Testing/Benchmark  | in progress | :heavy_check_mark:
+| Access DB (CRUD)   | in progress | :ballot_box_with_check:
+| REST API(gin)   | in progress | :ballot_box_with_check:
+| Testing/Benchmark  | in progress | :ballot_box_with_check:
 | -  | - | -
 
 
