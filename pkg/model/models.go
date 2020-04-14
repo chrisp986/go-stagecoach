@@ -1,11 +1,11 @@
-package database
+package model
 
-type EventBuffer struct {
+type Event struct {
 	ID       uint32
 	UUID     uint32
-	Sender   uint16
-	Receiver uint16
-	Event    uint16
+	Sender   string
+	Receiver string
+	Event    string
 	Subtitle string
 	Body     string
 	Template uint16

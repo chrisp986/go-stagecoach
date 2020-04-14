@@ -25,51 +25,81 @@ package main
 import (
 	"fmt"
 	"github.com/chrisp986/go-stagecoach/init/sqlite"
-	"github.com/chrisp986/go-stagecoach/pkg/database"
+	"github.com/chrisp986/go-stagecoach/pkg/service"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"path/filepath"
 )
 
-func main() {
-	fmt.Println("->> Stagecoach v0.1")
-	fmt.Println("-------------------")
+var sqliteDB *sqlx.DB
+
+func init() {
+
+	fmt.Println("->> Stagecoach v0.1 <<-")
+	fmt.Println("-----------------------")
 
 	msg := sqlite.InitiateDatabase()
 	log.Println(msg)
 
+}
+
+func main() {
+
+	log.Println("Initialization completed.")
+
+	// Create a connection to the database
 	sqliteDB, err := sqlx.Connect("sqlite3", filepath.Join("internal", "sqlitedb", "sqlite_database.db"))
 	if err != nil {
 		log.Fatalf("Connection to database %v", err)
 	}
 	defer sqliteDB.Close()
 
-	log.Println("Connection to database established")
+	log.Println("Connection to database established.")
+	log.Println("")
+	log.Println("Application is now live.")
 
-	eb := database.EventBuffer{
-		UUID:     123456,
-		Sender:   3,
-		Receiver: 12,
-		Event:    0,
-		Subtitle: "testsub",
-		Body:     "testbody",
-		Template: 1,
+	se := service.Event{}
+	//err = se.Add(sqliteDB)
+	//if err != nil {
+	//	log.Printf("Error in event.Add(): %v", err)
+	//}
+
+	model, err := se.GetOne(sqliteDB, 3)
+	if err != nil {
+		log.Printf("Error in event.GetOne(): %v", err)
 	}
 
-	eb.AddEvent(sqliteDB)
+	log.Println(model.UUID)
 
-	ma := database.MailAddress{
-		MailAddress: "test@test.com",
-		FirstName:   "Christian",
-		Name:        "Peters",
-		Status:      0,
-	}
-	ma.AddMailAddress(sqliteDB)
+	//es := service.Event{}
+	//model, err := es.Get(sqliteDB, 1)
+	//log.Println(model)
 
-	mt := database.MsgTemplate{
-		MsgSubtitle: "testsubtitle",
-		MsgBody:     "testbody",
-	}
-	mt.AddMsgTemplate(sqliteDB)
+	//eb := database.EventBuffer{
+	//	UUID:     123456,
+	//	Sender:   3,
+	//	Receiver: 12,
+	//	Event:    0,
+	//	Subtitle: "testsub",
+	//	Body:     "testbody",
+	//	Template: 1,
+	//}
+	//
+	//eb.AddEvent(sqliteDB)
+	//
+	//ma := database.MailAddress{
+	//	MailAddress: "test@test.com",
+	//	FirstName:   "Christian",
+	//	Name:        "Peters",
+	//	Status:      0,
+	//}
+	//ma.AddMailAddress(sqliteDB)
+	//
+	//mt := database.MsgTemplate{
+	//	MsgSubtitle: "testsubtitle",
+	//	MsgBody:     "testbody",
+	//}
+	//mt.AddMsgTemplate(sqliteDB)
 
 }

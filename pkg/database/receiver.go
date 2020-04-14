@@ -8,25 +8,25 @@ import (
 //TODO add method and interface to call the functions interchangeably
 //TODO write API to call the functions from outside of the application
 
-func (e EventBuffer) AddEvent(sqliteDB *sqlx.DB) {
-
-	result, err := sqliteDB.Exec(`INSERT INTO event_buffer(uuid, sender, receiver, event, subtitle, body, template) 
-									VALUES(?, ?, ?, ?, ?, ?, ?)`,
-		e.UUID,
-		e.Sender,
-		e.Receiver,
-		e.Event,
-		e.Subtitle,
-		e.Body,
-		e.Template)
-
-	if err != nil {
-		log.Printf("Error during Exec in AddEvent(): %v", err)
-	}
-
-	uuid, _ := result.LastInsertId()
-	log.Printf("New Event has been added with ID: %d", uuid)
-}
+//func (e EventBuffer) AddEvent(sqliteDB *sqlx.DB) {
+//
+//	result, err := sqliteDB.Exec(`INSERT INTO event_buffer(uuid, sender, receiver, event, subtitle, body, template)
+//									VALUES(?, ?, ?, ?, ?, ?, ?)`,
+//		e.UUID,
+//		e.Sender,
+//		e.Receiver,
+//		e.Event,
+//		e.Subtitle,
+//		e.Body,
+//		e.Template)
+//
+//	if err != nil {
+//		log.Printf("Error during Exec in AddEvent(): %v", err)
+//	}
+//
+//	id, _ := result.LastInsertId()
+//	log.Printf("New Event has been added with ID: %d", id)
+//}
 
 func (mail MailAddress) AddMailAddress(sqliteDB *sqlx.DB) {
 
