@@ -22,13 +22,13 @@ func InitiateDatabase() string {
 		tablesCreated := createSQLiteTable(createTables)
 
 		if tablesCreated {
-			return "SQLite database created, initialization done."
+			return "SQLite db created, initialization done."
 		}
 	}
-	return "SQLite database already exists, skipping creation."
+	return "SQLite db already exists, skipping creation."
 }
 
-//Check if the database already exists, will not check for tables
+//Check if the db already exists, will not check for tables
 func fileExist(name string) bool {
 	_, err := os.Stat(name)
 	if err != nil {
@@ -37,11 +37,11 @@ func fileExist(name string) bool {
 	return true
 }
 
-//Creates the SQLite database
+//Creates the SQLite db
 func createSQLiteDB() string {
-	log.Println("Initialize SQLite database.")
+	log.Println("Initialize SQLite db.")
 
-	//TODO Create folders for the database
+	//TODO Create folders for the db
 	//newpath := filepath.Join(".", "public")
 	//os.MkdirAll(newpath, os.ModePerm)
 
@@ -50,13 +50,13 @@ func createSQLiteDB() string {
 	if dbDirExist {
 		file, err := os.Create(sqlitePath)
 		if err != nil {
-			log.Printf("Error while creating SQLite database %v.", err)
+			log.Printf("Error while creating SQLite db %v.", err)
 		}
 		defer file.Close()
 
-		return "SQLite directory and database created."
+		return "SQLite directory and db created."
 	}
-	return "SQLite directory and database could not be created."
+	return "SQLite directory and db could not be created."
 }
 
 func createDBPath() bool {
@@ -67,7 +67,7 @@ func createDBPath() bool {
 		log.Printf("Error while creating SQLite directory %v", dbPath)
 		return false
 	}
-	log.Println("Directory for SQLite database created.")
+	log.Println("Directory for SQLite db created.")
 	return true
 }
 

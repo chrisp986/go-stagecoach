@@ -25,11 +25,11 @@ package main
 import (
 	"fmt"
 	"github.com/chrisp986/go-stagecoach/init/sqlite"
-	"github.com/chrisp986/go-stagecoach/pkg/service"
+	"github.com/chrisp986/go-stagecoach/pkg/api"
+	"github.com/chrisp986/go-stagecoach/pkg/db"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
-	"path/filepath"
 )
 
 var sqliteDB *sqlx.DB
@@ -42,28 +42,33 @@ func init() {
 	msg := sqlite.InitiateDatabase()
 	log.Println(msg)
 
+	//var err error
+	// Create a connection to the db
+	//sqliteDB, err = sqlx.Connect("sqlite3", filepath.Join("internal", "sqlitedb", "sqlite_database.db"))
+	//if err != nil {
+	//	log.Fatalf("Connection to db %v", err)
+	//}
+	//sqliteDB.SetMaxOpenConns(1)
+
 }
 
 func main() {
 
 	log.Println("Initialization completed.")
 
-	// Create a connection to the database
-	sqliteDB, err := sqlx.Connect("sqlite3", filepath.Join("internal", "sqlitedb", "sqlite_database.db"))
-	if err != nil {
-		log.Fatalf("Connection to database %v", err)
-	}
-	defer sqliteDB.Close()
+	sqliteDB = db.GetDB()
 
-	log.Println("Connection to database established.")
+	log.Println("Connection to db established.")
 	log.Println("")
 	log.Println("Application is now live.")
 
-	se := service.Event{}
-	err = se.Add(sqliteDB)
-	if err != nil {
-		log.Printf("Error in event.Add(): %v", err)
-	}
+	api.RunServer()
+
+	//se := service.Event{}
+	//err := se.Add()
+	//if err != nil {
+	//	log.Printf("Error in event.Add(): %v", err)
+	//}
 
 	//model, err := se.GetOne(sqliteDB, 3)
 	//if err != nil {
@@ -76,7 +81,7 @@ func main() {
 	//model, err := es.Get(sqliteDB, 1)
 	//log.Println(model)
 
-	//eb := database.EventBuffer{
+	//eb := db.EventBuffer{
 	//	UUID:     123456,
 	//	Sender:   3,
 	//	Receiver: 12,
@@ -88,7 +93,7 @@ func main() {
 	//
 	//eb.AddEvent(sqliteDB)
 	//
-	//ma := database.MailAddress{
+	//ma := db.MailAddress{
 	//	MailAddress: "test@test.com",
 	//	FirstName:   "Christian",
 	//	Name:        "Peters",
@@ -96,10 +101,11 @@ func main() {
 	//}
 	//ma.AddMailAddress(sqliteDB)
 	//
-	//mt := database.MsgTemplate{
+	//mt := db.MsgTemplate{
 	//	MsgSubtitle: "testsubtitle",
 	//	MsgBody:     "testbody",
 	//}
 	//mt.AddMsgTemplate(sqliteDB)
 
+	defer sqliteDB.Close()
 }

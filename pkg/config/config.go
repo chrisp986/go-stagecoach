@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-//Config is used to initialize the connection string for the database
+//Config is used to initialize the connection string for the db
 type DBConfig struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
@@ -24,7 +24,7 @@ type MailConfig struct {
 	FromAddress string `yaml:"fromAddress"`
 }
 
-//GetConfig is used to read the config file that stores the database information
+//GetConfig is used to read the config file that stores the db information
 func (d *DBConfig) ReadDBConfig() (dsn string) {
 
 	yamlFile, err := ioutil.ReadFile(filepath.Join("configs", "mail_config.yaml"))

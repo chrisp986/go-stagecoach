@@ -4,8 +4,8 @@ import (
 	cryptoRand "crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
+	"github.com/chrisp986/go-stagecoach/pkg/db"
 	"github.com/chrisp986/go-stagecoach/pkg/model"
-	"github.com/jmoiron/sqlx"
 	"log"
 	mathRand "math/rand"
 )
@@ -13,7 +13,7 @@ import (
 //When we have data nicely loaded into our models, we can perform additional logic
 //to process the data before we serve it, that’s where Services come into play.
 //This extra logic can be, for example filtering, aggregating, modifying structure or validating data.
-//On top of that it allows us to separate database queries from business logic, which makes the code much cleaner,
+//On top of that it allows us to separate db queries from business logic, which makes the code much cleaner,
 //easier to maintain and most
 //importantly (for me) easier to test (More on that later). So, let’s look at the code:
 
@@ -21,6 +21,8 @@ import (
 
 type Event []model.Event
 
+//createUID creates a unique ID based in the crypto/rand function, parameter is the size of the byte,
+//return is the uid as string
 func createUID(n int) string {
 	b := make([]byte, n)
 	_, err := cryptoRand.Read(b[:])
@@ -29,15 +31,17 @@ func createUID(n int) string {
 	}
 
 	mathRand.Seed(int64(binary.LittleEndian.Uint64(b[:])))
-	h := hex.EncodeToString(b[:])
+	uid := hex.EncodeToString(b[:])
 
-	return h
+	return uid
 }
 
 // Get just retrieves user using User DAO, here can be additional logic for processing data retrieved by DAOs
-func (e Event) GetOne(sqliteDB *sqlx.DB, id uint32) (*model.Event, error) {
+func (e Event) GetOne(id uint32) (*model.Event, error) {
 
 	var event model.Event
+	sqliteDB := db.GetDB()
+
 	err := sqliteDB.Get(&event, "SELECT * FROM event_buffer WHERE id = ?", id)
 
 	//err := sqliteDB.QueryRowx("SELECT * FROM event_buffer WHERE id=? LIMIT 1").StructScan(&event)
@@ -45,9 +49,11 @@ func (e Event) GetOne(sqliteDB *sqlx.DB, id uint32) (*model.Event, error) {
 }
 
 // Add creates a new Event
-func (e Event) Add(sqliteDB *sqlx.DB) error {
+func (e Event) Add() error {
 
 	var event model.Event
+	sqliteDB := db.GetDB()
+
 	c1 := make(chan string)
 
 	go func() {
