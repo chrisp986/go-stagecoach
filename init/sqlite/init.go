@@ -102,7 +102,7 @@ func createSQLiteTable(query string) bool {
 
 var createTables = `CREATE TABLE IF NOT EXISTS event_buffer(
 		  id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-          uuid INTEGER NOT NULL,
+          unique_id TEXT NOT NULL UNIQUE,
 		  sender TEXT NOT NULL DEFAULT 'sender_default',
 		  receiver TEXT NOT NULL DEFAULT 'receiver_default',
 		  event TEXT NOT NULL DEFAULT 'event_default',

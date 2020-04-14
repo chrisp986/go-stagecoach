@@ -60,17 +60,17 @@ func main() {
 	log.Println("Application is now live.")
 
 	se := service.Event{}
-	//err = se.Add(sqliteDB)
-	//if err != nil {
-	//	log.Printf("Error in event.Add(): %v", err)
-	//}
-
-	model, err := se.GetOne(sqliteDB, 3)
+	err = se.Add(sqliteDB)
 	if err != nil {
-		log.Printf("Error in event.GetOne(): %v", err)
+		log.Printf("Error in event.Add(): %v", err)
 	}
 
-	log.Println(model.UUID)
+	//model, err := se.GetOne(sqliteDB, 3)
+	//if err != nil {
+	//	log.Printf("Error in event.GetOne(): %v", err)
+	//}
+
+	//log.Println(model.UniqueID)
 
 	//es := service.Event{}
 	//model, err := es.Get(sqliteDB, 1)

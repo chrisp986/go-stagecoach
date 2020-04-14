@@ -2,7 +2,7 @@ package model
 
 type Event struct {
 	ID       uint32
-	UUID     uint32
+	UniqueID string
 	Sender   string
 	Receiver string
 	Event    string

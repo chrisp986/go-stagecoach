@@ -1,10 +1,13 @@
 package service
 
 import (
+	cryptoRand "crypto/rand"
+	"encoding/binary"
+	"encoding/hex"
 	"github.com/chrisp986/go-stagecoach/pkg/model"
 	"github.com/jmoiron/sqlx"
 	"log"
-	"time"
+	mathRand "math/rand"
 )
 
 //When we have data nicely loaded into our models, we can perform additional logic
@@ -18,6 +21,19 @@ import (
 
 type Event []model.Event
 
+func createUID(n int) string {
+	b := make([]byte, n)
+	_, err := cryptoRand.Read(b[:])
+	if err != nil {
+		log.Println(err)
+	}
+
+	mathRand.Seed(int64(binary.LittleEndian.Uint64(b[:])))
+	h := hex.EncodeToString(b[:])
+
+	return h
+}
+
 // Get just retrieves user using User DAO, here can be additional logic for processing data retrieved by DAOs
 func (e Event) GetOne(sqliteDB *sqlx.DB, id uint32) (*model.Event, error) {
 
@@ -28,12 +44,18 @@ func (e Event) GetOne(sqliteDB *sqlx.DB, id uint32) (*model.Event, error) {
 	return &event, err
 }
 
+// Add creates a new Event
 func (e Event) Add(sqliteDB *sqlx.DB) error {
 
 	var event model.Event
-	t := time.Now().Unix()
+	c1 := make(chan string)
 
-	event.UUID = uint32(t)
+	go func() {
+		uid := createUID(16)
+		c1 <- uid
+	}()
+
+	event.UniqueID = <-c1
 	event.Sender = "test432@abs.com"
 	event.Receiver = "testreceiver@test123.com"
 	event.Event = "cr"
@@ -43,7 +65,7 @@ func (e Event) Add(sqliteDB *sqlx.DB) error {
 
 	log.Println("Data to insert into event_buffer:", event)
 
-	stmt, err := sqliteDB.Prepare("INSERT INTO event_buffer(uuid, sender, receiver, event, subtitle, body, " +
+	stmt, err := sqliteDB.Prepare("INSERT INTO event_buffer(unique_id, sender, receiver, event, subtitle, body, " +
 		"template) VALUES(?, ?, ?, ?, ?, ?, ?)")
 
 	if err != nil {
@@ -51,7 +73,7 @@ func (e Event) Add(sqliteDB *sqlx.DB) error {
 	}
 
 	res, err := stmt.Exec(
-		event.UUID,
+		event.UniqueID,
 		event.Sender,
 		event.Receiver,
 		event.Event,
