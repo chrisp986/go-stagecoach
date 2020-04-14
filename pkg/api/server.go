@@ -14,10 +14,7 @@ import (
 func RunServer() {
 
 	router := gin.Default()
-	router.GET("/", func(c *gin.Context) {
-		//time.Sleep(1 * time.Second)
-		c.String(http.StatusOK, "Welcome Gin Server")
-	})
+	router.GET("/", EventGet)
 
 	srv := &http.Server{
 		Addr:    ":8080",

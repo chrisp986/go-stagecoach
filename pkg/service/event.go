@@ -44,7 +44,6 @@ func (e Event) GetOne(id uint32) (*model.Event, error) {
 
 	err := sqliteDB.Get(&event, "SELECT * FROM event_buffer WHERE id = ?", id)
 
-	//err := sqliteDB.QueryRowx("SELECT * FROM event_buffer WHERE id=? LIMIT 1").StructScan(&event)
 	return &event, err
 }
 
