@@ -18,11 +18,6 @@ func RunServer() {
 
 	v1.Router(r)
 
-	//router := r.Group("api/v1")
-	//{
-	//	router.GET("/ping", v1.EventGet)
-	//}
-
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: r,

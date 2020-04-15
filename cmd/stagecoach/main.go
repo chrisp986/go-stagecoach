@@ -62,9 +62,9 @@ func main() {
 	//	log.Printf("Error in event.Add(): %v", err)
 	//}
 
-	//model, err := se.GetOne(sqliteDB, 3)
+	//model, err := se.Get(sqliteDB, 3)
 	//if err != nil {
-	//	log.Printf("Error in event.GetOne(): %v", err)
+	//	log.Printf("Error in event.Get(): %v", err)
 	//}
 
 	//log.Println(model.UniqueID)

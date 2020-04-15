@@ -36,8 +36,8 @@ func createUID(n int) string {
 	return uid
 }
 
-// Get just retrieves user using User DAO, here can be additional logic for processing data retrieved by DAOs
-func (e Event) GetOne(id uint32) (*model.Event, error) {
+// Get just retrieves using User DAO, here can be additional logic for processing data retrieved by DAOs
+func (e Event) Get(id uint32) (*model.Event, error) {
 
 	var event model.Event
 	sqliteDB := db.GetDB()

@@ -11,7 +11,7 @@ var sqliteDB *sqlx.DB
 func init() {
 	var err error
 
-	sqliteDB, err = sqlx.Connect("sqlite3", filepath.Join("internal", "sqlitedb", "sqlite_database.db"))
+	sqliteDB, err = sqlx.Connect("sqlite3", filepath.Join("internal", "sqlitedb", "sqlite_database.db?_loc=auto"))
 	if err != nil {
 		log.Fatalf("Couldn't establish the connection to SQLite DB %v", err)
 	}
