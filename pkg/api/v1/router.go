@@ -5,17 +5,17 @@ import (
 	"net/http"
 )
 
-func Router(r *gin.Engine) *gin.RouterGroup {
+func ApplyRoutes(r *gin.Engine) *gin.RouterGroup {
 
-	router := r.Group("api/v1")
+	apiv1 := r.Group("api/v1")
 	{
-		router.GET("/event/:id", GetEvent)
-		router.POST("/event", GetEvent)
+		apiv1.GET("/event/:id", GetEvent)
+		apiv1.POST("/event", GetEvent)
 	}
 
 	r.NoRoute(func(c *gin.Context) {
-		c.AbortWithStatus(http.StatusNotFound)
+		c.AbortWithStatusJSON(http.StatusNotFound, "404 - not found")
 	})
 
-	return router
+	return apiv1
 }

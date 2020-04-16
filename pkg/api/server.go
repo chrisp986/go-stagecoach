@@ -16,7 +16,7 @@ func RunServer() {
 
 	r := gin.Default()
 
-	v1.Router(r)
+	v1.ApplyRoutes(r)
 
 	srv := &http.Server{
 		Addr:    ":8080",

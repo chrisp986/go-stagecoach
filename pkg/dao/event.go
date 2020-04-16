@@ -8,6 +8,12 @@ import (
 // EventDAO persists event data in database
 type EventDAO struct{}
 
+//Creates an new EventDAO
+func NewEventDAO() *EventDAO {
+	return &EventDAO{}
+}
+
+//Get() queries the database and returns an event struct if and event with that ID is available
 func (dao *EventDAO) Get(id uint32) (*model.Event, error) {
 
 	sqliteDB := db.GetDB()

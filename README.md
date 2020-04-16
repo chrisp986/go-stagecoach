@@ -1,4 +1,4 @@
-## Stagecoach - a mail service written in Go
+# Stagecoach - a mail service written in Go
 
 
 This project is still in an early development stage and is not ready for testing yet. This project is developed only by me and 
@@ -6,7 +6,7 @@ as a side project the progress might be slow since Go is also quite new to me. I
 
 
 
-### Dependencies
+## Dependencies
 
 SQLite - Stores events and mail addresses
 
@@ -16,7 +16,7 @@ Gin - Implementation of REST API
 
 
 
-### TODO
+## TODO
 
 | Task           | Current Status | Finished | 
 |----------------|----------------|-----------|
@@ -24,12 +24,13 @@ Gin - Implementation of REST API
 | Access DB (CRUD)   | in progress | :ballot_box_with_check:
 | REST API(gin)   | in progress | :ballot_box_with_check:
 | Testing/Benchmark  | in progress | :ballot_box_with_check:
+| Mail Service  | planing | :ballot_box_with_check:
 | -  | - | -
 
 
 
 
-### License 
+## License 
 
 MIT License
 

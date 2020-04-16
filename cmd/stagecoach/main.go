@@ -23,7 +23,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/chrisp986/go-stagecoach/init/sqlite"
 	"github.com/chrisp986/go-stagecoach/pkg/api"
 	"github.com/chrisp986/go-stagecoach/pkg/db"
@@ -33,28 +32,30 @@ import (
 )
 
 var sqliteDB *sqlx.DB
+var initDone bool
+var msg string
 
 func init() {
+	log.Println("->> Stagecoach v0.1 <<-")
+	log.Println("-----------------------")
 
-	fmt.Println("->> Stagecoach v0.1 <<-")
-	fmt.Println("-----------------------")
+	msg, initDone = sqlite.InitiateDatabase()
 
-	msg := sqlite.InitiateDatabase()
 	log.Println(msg)
 
+	if initDone {
+		log.Println("Initialization completed. Starting Server.")
+	}
+
+	db.ConnectDB()  // Connect to SQLite DB
+	api.RunServer() // Start Gin Server
 }
 
 func main() {
 
-	log.Println("Initialization completed.")
-
 	sqliteDB = db.GetDB()
-
 	log.Println("Connection to db established.")
-	log.Println("")
-	log.Println("Application is now live.")
-
-	api.RunServer()
+	defer sqliteDB.Close() //Close connection when main() stops
 
 	//se := service.Event{}
 	//err := se.Add()
@@ -66,8 +67,6 @@ func main() {
 	//if err != nil {
 	//	log.Printf("Error in event.Get(): %v", err)
 	//}
-
-	//log.Println(model.UniqueID)
 
 	//es := service.Event{}
 	//model, err := es.Get(sqliteDB, 1)
@@ -99,5 +98,4 @@ func main() {
 	//}
 	//mt.AddMsgTemplate(sqliteDB)
 
-	defer sqliteDB.Close()
 }

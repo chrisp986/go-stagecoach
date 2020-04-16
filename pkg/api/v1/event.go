@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/chrisp986/go-stagecoach/pkg/dao"
+	"github.com/chrisp986/go-stagecoach/pkg/service"
 	"log"
 	"net/http"
 	"strconv"
@@ -15,9 +16,18 @@ func GetEvent(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
 
 	if event, err := e.Get(uint32(id)); err != nil {
-		c.AbortWithStatus(http.StatusNotFound)
+		c.AbortWithStatusJSON(http.StatusNotFound, "404 - No event found with that ID")
 		log.Printf("Error on Get request for ID: %d with code: %v", id, err)
 	} else {
 		c.JSON(http.StatusOK, event)
 	}
+}
+
+func CreateEvent(c *gin.Context) {
+
+	//e := service.NewEventService(dao.NewEventDAO())
+
+	e := service.Event{}
+	e.Add()
+
 }
