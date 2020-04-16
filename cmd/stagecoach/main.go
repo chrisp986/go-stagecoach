@@ -40,21 +40,20 @@ func init() {
 	log.Println("-----------------------")
 
 	msg, initDone = sqlite.InitiateDatabase()
-
 	log.Println(msg)
+
+	db.ConnectDB() // Connect to SQLite DB
+	log.Println("Connection to db established.")
 
 	if initDone {
 		log.Println("Initialization completed. Starting Server.")
+		api.RunServer() // Start Gin Server
 	}
-
-	db.ConnectDB()  // Connect to SQLite DB
-	api.RunServer() // Start Gin Server
 }
 
 func main() {
 
 	sqliteDB = db.GetDB()
-	log.Println("Connection to db established.")
 	defer sqliteDB.Close() //Close connection when main() stops
 
 	//se := service.Event{}
@@ -63,13 +62,13 @@ func main() {
 	//	log.Printf("Error in event.Add(): %v", err)
 	//}
 
-	//model, err := se.Get(sqliteDB, 3)
+	//model, err := se.GetDAO(sqliteDB, 3)
 	//if err != nil {
-	//	log.Printf("Error in event.Get(): %v", err)
+	//	log.Printf("Error in event.GetDAO(): %v", err)
 	//}
 
 	//es := service.Event{}
-	//model, err := es.Get(sqliteDB, 1)
+	//model, err := es.GetDAO(sqliteDB, 1)
 	//log.Println(model)
 
 	//eb := db.EventBuffer{

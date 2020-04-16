@@ -131,14 +131,3 @@ func (e Event) Add() (id uint32, err error) {
 
 	return uint32(lastId), err
 }
-
-//// Get just retrieves using User DAO, here can be additional logic for processing data retrieved by DAOs
-//func (e Event) Get(id uint32) (*model.Event, error) {
-//
-//	var event model.Event
-//	sqliteDB := db.GetDB()
-//
-//	err := sqliteDB.Get(&event, "SELECT * FROM event_buffer WHERE id = ?", id)
-//
-//	return &event, err
-//}

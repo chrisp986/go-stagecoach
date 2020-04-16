@@ -24,7 +24,8 @@ Gin - Implementation of REST API
 | Access DB (CRUD)   | in progress | :ballot_box_with_check:
 | REST API(gin)   | in progress | :ballot_box_with_check:
 | Testing/Benchmark  | in progress | :ballot_box_with_check:
-| Mail Service  | planing | :ballot_box_with_check:
+| Mail Service  | planed | :ballot_box_with_check:
+| Client Authentication  | planed | :ballot_box_with_check:
 | -  | - | -
 
 

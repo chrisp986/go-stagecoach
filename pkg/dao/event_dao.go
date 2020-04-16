@@ -13,13 +13,13 @@ func NewEventDAO() *EventDAO {
 	return &EventDAO{}
 }
 
-//Get() queries the database and returns an event struct if and event with that ID is available
-func (dao *EventDAO) Get(id uint32) (*model.Event, error) {
+//GetDAO() queries the database and returns an event struct if and event with that ID is available
+func (dao *EventDAO) GetDAO(id uint32) (*model.Event, error) {
 
 	sqliteDB := db.GetDB()
-	var event model.Event
+	var e model.Event
 
-	err := sqliteDB.Get(&event, "SELECT * FROM event_buffer WHERE id = ?", id)
+	err := sqliteDB.Get(&e, "SELECT * FROM event_buffer WHERE id = ?", id)
 
-	return &event, err
+	return &e, err
 }
