@@ -9,9 +9,7 @@ as a side project the progress might be slow since Go is also quite new to me. I
 ## Dependencies
 
 SQLite - Stores events and mail addresses
-
 SQLX - Addition to the database/sql package
-
 Gin - Implementation of REST API
 
 
