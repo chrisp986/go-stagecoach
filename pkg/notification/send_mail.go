@@ -14,8 +14,7 @@ type Mail struct {
 	smtpServer, loginname, password, fromAddress string
 }
 
-
-func SendMail() {
+func (m *Mail) SendMail() {
 
 	fmt.Println("[SEND MAIL] Writing weekly status mail...")
 
@@ -26,8 +25,8 @@ func SendMail() {
 			"Greetings!\r\n")
 
 	toAddresses := []string{"d4m1en@gmx.de"}
-	auth := LoginAuth(loginname, password)
-	err := smtp.SendMail(smtpServer+":587", auth, fromAddress, toAddresses, msg)
+	auth := LoginAuth(m.loginname, m.password)
+	err := smtp.SendMail(m.smtpServer+":587", auth, m.fromAddress, toAddresses, msg)
 
 	if err != nil {
 		fmt.Println("Does not work", err)
@@ -35,16 +34,13 @@ func SendMail() {
 	defer fmt.Println("[SEND MAIL] Pigeon is on its way!")
 }
 
-
 func LoginAuth(username, password string) smtp.Auth {
 	return &loginAuth{username, password}
 }
 
-
 func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
 	return "LOGIN", []byte(a.username), nil
 }
-
 
 func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 	if more {

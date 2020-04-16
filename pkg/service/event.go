@@ -4,10 +4,12 @@ import (
 	cryptoRand "crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"github.com/chrisp986/go-stagecoach/pkg/db"
 	"github.com/chrisp986/go-stagecoach/pkg/model"
 	"log"
 	mathRand "math/rand"
+	"net/http"
 )
 
 //When we have data nicely loaded into our models, we can perform additional logic
@@ -20,6 +22,48 @@ import (
 //Do extra logic with the data we got from the query or api
 
 type Event []model.Event
+
+type Adder interface {
+	Add(event model.Event) (id uint32, err error)
+}
+
+type Buffer struct {
+	Events []model.Event
+}
+
+func New() *Buffer {
+	return &Buffer{Events: []model.Event{}}
+}
+
+func (e *Buffer) AddEvent(event model.Event) {
+	e.Events = append(e.Events, event)
+}
+
+func NewEvent(event Adder) http.HandlerFunc {
+
+	c1 := make(chan string)
+
+	go func() {
+		uid := createUID(16)
+		c1 <- uid
+	}()
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		request := map[string]string{}
+
+		json.NewDecoder(r.Body).Decode(&request)
+
+		event.Add(model.Event{
+			UniqueID: <-c1,
+			Sender:   "testsender@uhf.com",
+			Receiver: "blkjsdjf@ijdsa.com",
+			Event:    "cr",
+			Subtitle: "subtitleniuenf",
+			Body:     "bodyiwejfw",
+			Template: 0,
+		})
+	}
+}
 
 //createUID creates a unique ID based in the crypto/rand function, parameter is the size of the byte,
 //return is the uid as string
@@ -36,20 +80,8 @@ func createUID(n int) string {
 	return uid
 }
 
-// Get just retrieves user using User DAO, here can be additional logic for processing data retrieved by DAOs
-func (e Event) GetOne(id uint32) (*model.Event, error) {
-
-	var event model.Event
-	sqliteDB := db.GetDB()
-
-	err := sqliteDB.Get(&event, "SELECT * FROM event_buffer WHERE id = ?", id)
-
-	//err := sqliteDB.QueryRowx("SELECT * FROM event_buffer WHERE id=? LIMIT 1").StructScan(&event)
-	return &event, err
-}
-
 // Add creates a new Event
-func (e Event) Add() error {
+func (e Event) Add() (id uint32, err error) {
 
 	var event model.Event
 	sqliteDB := db.GetDB()
@@ -97,5 +129,5 @@ func (e Event) Add() error {
 	}
 	log.Printf("Event inserted with ID: %d", lastId)
 
-	return err
+	return uint32(lastId), err
 }

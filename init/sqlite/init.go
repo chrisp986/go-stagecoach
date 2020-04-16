@@ -11,8 +11,11 @@ import (
 
 var sqlitePath = filepath.Join("internal", "sqlitedb", "sqlite_database.db")
 
-func InitiateDatabase() string {
+func InitiateDatabase() (msg string, initDone bool) {
+
+	log.Println("Start initializing.")
 	var sqliteDB *sqlx.DB
+	initDone = false
 
 	if !fileExist(sqlitePath) {
 		createSQLiteDB()
@@ -22,10 +25,10 @@ func InitiateDatabase() string {
 		tablesCreated := createSQLiteTable(createTables)
 
 		if tablesCreated {
-			return "SQLite db created, initialization done."
+			return "SQLite db created, initialization done.", true
 		}
 	}
-	return "SQLite db already exists, skipping creation."
+	return "SQLite db already exists, skipping creation.", true
 }
 
 //Check if the db already exists, will not check for tables
@@ -38,12 +41,10 @@ func fileExist(name string) bool {
 }
 
 //Creates the SQLite db
-func createSQLiteDB() string {
-	log.Println("Initialize SQLite db.")
+func createSQLiteDB() (msg string, dbCreated bool) {
+	dbCreated = false
 
-	//TODO Create folders for the db
-	//newpath := filepath.Join(".", "public")
-	//os.MkdirAll(newpath, os.ModePerm)
+	log.Println("Initialize SQLite db.")
 
 	dbDirExist := createDBPath()
 
@@ -54,9 +55,9 @@ func createSQLiteDB() string {
 		}
 		defer file.Close()
 
-		return "SQLite directory and db created."
+		return "SQLite directory and db created.", true
 	}
-	return "SQLite directory and db could not be created."
+	return "SQLite directory and db could not be created.", false
 }
 
 func createDBPath() bool {

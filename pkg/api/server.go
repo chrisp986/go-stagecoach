@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	v1 "github.com/chrisp986/go-stagecoach/pkg/api/v1"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -13,15 +14,13 @@ import (
 
 func RunServer() {
 
-	router := gin.Default()
-	router.GET("/", func(c *gin.Context) {
-		//time.Sleep(1 * time.Second)
-		c.String(http.StatusOK, "Welcome Gin Server")
-	})
+	r := gin.Default()
+
+	v1.ApplyRoutes(r)
 
 	srv := &http.Server{
 		Addr:    ":8080",
-		Handler: router,
+		Handler: r,
 	}
 
 	// Initializing the server in a goroutine so that

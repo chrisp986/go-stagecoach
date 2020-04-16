@@ -23,7 +23,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/chrisp986/go-stagecoach/init/sqlite"
 	"github.com/chrisp986/go-stagecoach/pkg/api"
 	"github.com/chrisp986/go-stagecoach/pkg/db"
@@ -33,36 +32,29 @@ import (
 )
 
 var sqliteDB *sqlx.DB
+var initDone bool
+var msg string
 
 func init() {
+	log.Println("->> Stagecoach v0.1 <<-")
+	log.Println("-----------------------")
 
-	fmt.Println("->> Stagecoach v0.1 <<-")
-	fmt.Println("-----------------------")
-
-	msg := sqlite.InitiateDatabase()
+	msg, initDone = sqlite.InitiateDatabase()
 	log.Println(msg)
 
-	//var err error
-	// Create a connection to the db
-	//sqliteDB, err = sqlx.Connect("sqlite3", filepath.Join("internal", "sqlitedb", "sqlite_database.db"))
-	//if err != nil {
-	//	log.Fatalf("Connection to db %v", err)
-	//}
-	//sqliteDB.SetMaxOpenConns(1)
+	db.ConnectDB() // Connect to SQLite DB
+	log.Println("Connection to db established.")
 
+	if initDone {
+		log.Println("Initialization completed. Starting Server.")
+		api.RunServer() // Start Gin Server
+	}
 }
 
 func main() {
 
-	log.Println("Initialization completed.")
-
 	sqliteDB = db.GetDB()
-
-	log.Println("Connection to db established.")
-	log.Println("")
-	log.Println("Application is now live.")
-
-	api.RunServer()
+	defer sqliteDB.Close() //Close connection when main() stops
 
 	//se := service.Event{}
 	//err := se.Add()
@@ -70,15 +62,13 @@ func main() {
 	//	log.Printf("Error in event.Add(): %v", err)
 	//}
 
-	//model, err := se.GetOne(sqliteDB, 3)
+	//model, err := se.GetDAO(sqliteDB, 3)
 	//if err != nil {
-	//	log.Printf("Error in event.GetOne(): %v", err)
+	//	log.Printf("Error in event.GetDAO(): %v", err)
 	//}
 
-	//log.Println(model.UniqueID)
-
 	//es := service.Event{}
-	//model, err := es.Get(sqliteDB, 1)
+	//model, err := es.GetDAO(sqliteDB, 1)
 	//log.Println(model)
 
 	//eb := db.EventBuffer{
@@ -107,5 +97,4 @@ func main() {
 	//}
 	//mt.AddMsgTemplate(sqliteDB)
 
-	defer sqliteDB.Close()
 }

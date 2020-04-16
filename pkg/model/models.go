@@ -9,7 +9,7 @@ type Event struct {
 	Subtitle string `json:"subtitle,omitempty" db:"subtitle"`
 	Body     string `json:"body,omitempty" db:"body"`
 	Template uint16 `json:"template,omitempty" db:"template"`
-	Created  string `json:"created,omitempty" db:"created"`
+	Created  string `json:"created" db:"created"`
 	Sent     string `json:"sent,omitempty" db:"sent"`
 }
 
