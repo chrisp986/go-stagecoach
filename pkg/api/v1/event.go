@@ -1,9 +1,7 @@
 package v1
 
 import (
-	"fmt"
 	"github.com/chrisp986/go-stagecoach/pkg/dao"
-	"github.com/chrisp986/go-stagecoach/pkg/model"
 	"log"
 	"net/http"
 	"strconv"
@@ -24,20 +22,21 @@ func GetEvent(c *gin.Context) {
 	}
 }
 
-func AddEvent(c *gin.Context) {
+//func AddEvent(c *gin.Context) {
+//
+//}
 
-	var e model.Event
-
-	e.Sender = c.Query("sender")
-	e.Receiver = c.Query("receiver")
-	e.Event = c.Query("event")
-	template, _ := strconv.ParseInt(c.Query("template"), 10, 16)
-	e.Template = uint16(template)
-	e.Subtitle = c.Query("subtitle")
-	e.Body = c.Query("body")
-
-	c.JSON(http.StatusOK, fmt.Sprintf(" %v", c.Query("id")))
-}
+//var e model.Event
+//
+//e.Sender = c.Query("sender")
+//e.Receiver = c.Query("receiver")
+//e.Event = c.Query("event")
+//template, _ := strconv.ParseInt(c.Query("template"), 10, 16)
+//e.Template = uint16(template)
+//e.Subtitle = c.Query("subtitle")
+//e.Body = c.Query("body")
+//
+//c.JSON(http.StatusOK, fmt.Sprintf(" %v", c.Query("id")))
 
 //"id": e.ID,
 //"unique_id": "blala",

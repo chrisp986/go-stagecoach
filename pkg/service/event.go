@@ -4,12 +4,10 @@ import (
 	cryptoRand "crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
-	"encoding/json"
 	"github.com/chrisp986/go-stagecoach/pkg/db"
 	"github.com/chrisp986/go-stagecoach/pkg/model"
 	"log"
 	mathRand "math/rand"
-	"net/http"
 )
 
 //When we have data nicely loaded into our models, we can perform additional logic
@@ -21,25 +19,11 @@ import (
 
 //Do extra logic with the data we got from the query or api
 
-type Event []model.Event
+// Add creates a new Event
+func AddEvent(e model.Event) (bool, uint32, error) {
 
-type Adder interface {
-	Add(event model.Event) (id uint32, err error)
-}
-
-type Buffer struct {
-	Events []model.Event
-}
-
-func New() *Buffer {
-	return &Buffer{Events: []model.Event{}}
-}
-
-func (e *Buffer) AddEvent(event model.Event) {
-	e.Events = append(e.Events, event)
-}
-
-func NewEvent(event Adder) http.HandlerFunc {
+	sqliteDB := db.GetDB()
+	var newEvent model.Event
 
 	c1 := make(chan string)
 
@@ -48,21 +32,43 @@ func NewEvent(event Adder) http.HandlerFunc {
 		c1 <- uid
 	}()
 
-	return func(w http.ResponseWriter, r *http.Request) {
-		request := map[string]string{}
+	newEvent.UniqueID = <-c1
+	newEvent.Sender = e.Sender
+	newEvent.Receiver = e.Receiver
+	newEvent.Event = e.Event
+	newEvent.Subtitle = e.Subtitle
+	newEvent.Body = e.Body
+	newEvent.Template = e.Template
 
-		json.NewDecoder(r.Body).Decode(&request)
+	stmt, err := sqliteDB.Prepare("INSERT INTO event_buffer(unique_id, sender, receiver, event, subtitle, body, " +
+		"template) VALUES(?, ?, ?, ?, ?, ?, ?)")
 
-		event.Add(model.Event{
-			UniqueID: <-c1,
-			Sender:   "testsender@uhf.com",
-			Receiver: "blkjsdjf@ijdsa.com",
-			Event:    "cr",
-			Subtitle: "subtitleniuenf",
-			Body:     "bodyiwejfw",
-			Template: 0,
-		})
+	if err != nil {
+		log.Printf("Error in Prepare AddEvent() %v", err)
+		return false, 0, err
 	}
+
+	res, err := stmt.Exec(
+		newEvent.UniqueID,
+		newEvent.Sender,
+		newEvent.Receiver,
+		newEvent.Event,
+		newEvent.Subtitle,
+		newEvent.Body,
+		newEvent.Template)
+
+	if err != nil {
+		log.Printf("Error on Exec in AddEvent(): %v", err)
+		return false, 0, err
+	}
+
+	lastId, err := res.LastInsertId()
+	if err != nil {
+		log.Printf("Error on LastInsertId() in event AddEvent(): %v", err)
+		return false, 0, err
+	}
+
+	return true, uint32(lastId), err
 }
 
 //createUID creates a unique ID based in the crypto/rand function, parameter is the size of the byte,
@@ -78,56 +84,4 @@ func createUID(n int) string {
 	uid := hex.EncodeToString(b[:])
 
 	return uid
-}
-
-// Add creates a new Event
-func (e Event) Add() (id uint32, err error) {
-
-	var event model.Event
-	sqliteDB := db.GetDB()
-
-	c1 := make(chan string)
-
-	go func() {
-		uid := createUID(16)
-		c1 <- uid
-	}()
-
-	event.UniqueID = <-c1
-	event.Sender = "test432@abs.com"
-	event.Receiver = "testreceiver@test123.com"
-	event.Event = "cr"
-	event.Subtitle = "subtitle"
-	event.Body = "testbody"
-	event.Template = 1
-
-	log.Println("Data to insert into event_buffer:", event)
-
-	stmt, err := sqliteDB.Prepare("INSERT INTO event_buffer(unique_id, sender, receiver, event, subtitle, body, " +
-		"template) VALUES(?, ?, ?, ?, ?, ?, ?)")
-
-	if err != nil {
-		log.Printf("Error in Prepare event.Add %v", err)
-	}
-
-	res, err := stmt.Exec(
-		event.UniqueID,
-		event.Sender,
-		event.Receiver,
-		event.Event,
-		event.Subtitle,
-		event.Body,
-		event.Template)
-
-	if err != nil {
-		log.Printf("Error on Exec in event Add(): %v", err)
-	}
-
-	lastId, err := res.LastInsertId()
-	if err != nil {
-		log.Printf("Error on LastInsertId() in event Add(): %v", err)
-	}
-	log.Printf("Event inserted with ID: %d", lastId)
-
-	return uint32(lastId), err
 }

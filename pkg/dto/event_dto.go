@@ -3,12 +3,11 @@ package dto
 import (
 	"fmt"
 	"github.com/chrisp986/go-stagecoach/pkg/model"
+	"github.com/chrisp986/go-stagecoach/pkg/service"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 )
-
-type EventDTO struct{}
 
 //TODO Added client authentication and check that before accepting a DTO
 
@@ -17,10 +16,17 @@ func GetDTO(c *gin.Context) {
 	var e model.Event
 
 	if err := c.ShouldBindJSON(&e); err == nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, "404 - No event found, check ID")
+		c.AbortWithStatusJSON(http.StatusNoContent, "204 - No Content")
 		log.Printf("Error on GetDTO request for  with code: %v", err)
 	} else {
-		c.JSON(http.StatusCreated, fmt.Sprintf("201 - New request received"))
+
+		eventAdded, id, err := service.AddEvent(e)
+		if eventAdded == false && err != nil {
+			log.Printf("Error in servic.AddEvent(): %v", err)
+		} else {
+			c.JSON(http.StatusCreated, fmt.Sprintf("201 - New request received"))
+			log.Printf("New Event has ID: %d", id)
+			log.Println("DTO: ", e)
+		}
 	}
-	log.Println("DTO: ", e)
 }
