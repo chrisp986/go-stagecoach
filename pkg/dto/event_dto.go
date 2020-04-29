@@ -26,6 +26,7 @@ func GetDTO(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusCreated, fmt.Sprintf("201 - New request received"))
 			log.Printf("New Event has ID: %d", id)
+			service.UpdateSendDate(id)
 		}
 	}
 }

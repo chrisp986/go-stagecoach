@@ -10,7 +10,8 @@ type Event struct {
 	Body     string `json:"body,omitempty" db:"body"`
 	Template string `json:"template,omitempty" db:"template"`
 	Created  string `json:"created" db:"created"`
-	Sent     string `json:"sent,omitempty" db:"sent"`
+	SentDate string `json:"sent,omitempty" db:"sent"`
+	Sent     int    `json:"sent,omitempty" db:"sent"`
 }
 
 type MailAddress struct {

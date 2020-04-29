@@ -111,7 +111,8 @@ var createTables = `CREATE TABLE IF NOT EXISTS event_buffer(
 		  body TEXT NOT NULL DEFAULT 'body_default',
 		  template INTEGER NOT NULL DEFAULT 0,
 		  created DATETIME NOT NULL DEFAULT (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW','localtime')),
-		  sent DATETIME NOT NULL DEFAULT '01-01-1970  00:00:00.000'
+		  sent_date DATETIME NOT NULL DEFAULT '01-01-1970  00:00:00.000',
+		  sent INTEGER NOT NULL DEFAULT 0
 		);
 
 		CREATE TABLE IF NOT EXISTS mail_address(

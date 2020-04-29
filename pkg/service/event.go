@@ -22,6 +22,21 @@ import (
 
 //Do extra logic with the data we got from the query or api
 
+func EventService(e model.Event) bool {
+
+	eventAdded, id, err := AddEvent(e)
+	if eventAdded == false && err != nil {
+		log.Printf("Error in servic.EventService(): %v", err)
+		return false
+	} else {
+		//c.JSON(http.StatusCreated, fmt.Sprintf("201 - New request received"))
+		log.Printf("New Event created with ID: %d", id)
+
+		UpdateSendDate(id)
+	}
+
+}
+
 // Add creates a new Event
 func AddEvent(e model.Event) (bool, uint32, error) {
 
@@ -88,8 +103,34 @@ func AddEvent(e model.Event) (bool, uint32, error) {
 		log.Printf("Error on LastInsertId() in event AddEvent(): %v", err)
 		return false, 0, err
 	}
-
 	return true, uint32(lastId), err
+}
+
+func UpdateSendDate(id uint32) {
+
+	sqliteDB := db.GetDB()
+
+	stmt, err := sqliteDB.Prepare("UPDATE event_buffer SET sent_date = (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW'," +
+		"'localtime')), sent = ? WHERE id = ?")
+
+	if err != nil {
+		log.Printf("Error in Prepare updateSendDate() %v", err)
+
+	}
+
+	res, err := stmt.Exec(1, id)
+
+	if err != nil {
+		log.Printf("Error on Exec in updateSendDate(): %v", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Printf("Error on RowsAffected() in event updateSendDate(): %v", err)
+	}
+	if rowsAffected == 1 {
+		log.Println("Mail has been sent!")
+	}
 }
 
 //createUID creates a unique ID based in the crypto/rand function, parameter is the size of the byte,
