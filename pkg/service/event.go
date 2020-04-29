@@ -4,10 +4,12 @@ import (
 	cryptoRand "crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"github.com/chrisp986/go-stagecoach/pkg/db"
 	"github.com/chrisp986/go-stagecoach/pkg/model"
 	"log"
 	mathRand "math/rand"
+	"regexp"
 )
 
 //When we have data nicely loaded into our models, we can perform additional logic
@@ -24,6 +26,7 @@ func AddEvent(e model.Event) (bool, uint32, error) {
 
 	sqliteDB := db.GetDB()
 	var newEvent model.Event
+	errEmail := errors.New("no valid Email address")
 
 	c1 := make(chan string)
 
@@ -31,6 +34,16 @@ func AddEvent(e model.Event) (bool, uint32, error) {
 		uid := createUID(16)
 		c1 <- uid
 	}()
+
+	if !validateEmail(e.Sender) {
+		log.Printf("%s is no valid Email", e.Sender)
+		return false, 0, errEmail
+	}
+
+	if !validateEmail(e.Receiver) {
+		log.Printf("%s is no valid Email", e.Receiver)
+		return false, 0, errEmail
+	}
 
 	newEvent.UniqueID = <-c1
 	newEvent.Sender = e.Sender
@@ -84,4 +97,13 @@ func createUID(n int) string {
 	uid := hex.EncodeToString(b[:])
 
 	return uid
+}
+
+func validateEmail(email string) bool {
+	var rxEmail = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+	if len(email) > 254 || !rxEmail.MatchString(email) {
+		return false
+	}
+	return true
 }
