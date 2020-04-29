@@ -10,6 +10,7 @@ import (
 	"log"
 	mathRand "math/rand"
 	"regexp"
+	"strings"
 )
 
 //When we have data nicely loaded into our models, we can perform additional logic
@@ -27,6 +28,7 @@ func AddEvent(e model.Event) (bool, uint32, error) {
 	sqliteDB := db.GetDB()
 	var newEvent model.Event
 	errEmail := errors.New("no valid Email address")
+	errEmpty := errors.New("field is empty")
 
 	c1 := make(chan string)
 
@@ -34,6 +36,12 @@ func AddEvent(e model.Event) (bool, uint32, error) {
 		uid := createUID(16)
 		c1 <- uid
 	}()
+
+	if !validateNotEmpty(e.Sender) || !validateNotEmpty(e.Receiver) || !validateNotEmpty(e.
+		Event) || !validateNotEmpty(e.Subtitle) || !validateNotEmpty(e.Body) || !validateNotEmpty(e.Template) {
+
+		return false, 0, errEmpty
+	}
 
 	if !validateEmail(e.Sender) {
 		log.Printf("%s is no valid Email", e.Sender)
@@ -103,6 +111,13 @@ func validateEmail(email string) bool {
 	var rxEmail = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 	if len(email) > 254 || !rxEmail.MatchString(email) {
+		return false
+	}
+	return true
+}
+
+func validateNotEmpty(value string) bool {
+	if strings.TrimSpace(value) == "" {
 		return false
 	}
 	return true

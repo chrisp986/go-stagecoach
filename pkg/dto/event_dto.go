@@ -14,8 +14,7 @@ import (
 func GetDTO(c *gin.Context) {
 
 	var e model.Event
-
-	if err := c.ShouldBindJSON(&e); err == nil {
+	if err := c.ShouldBindJSON(&e); err != nil {
 		c.AbortWithStatusJSON(http.StatusNoContent, "204 - No Content")
 		log.Printf("Error on GetDTO request for  with code: %v", err)
 	} else {
