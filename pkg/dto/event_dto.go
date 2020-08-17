@@ -19,14 +19,15 @@ func GetDTO(c *gin.Context) {
 		log.Printf("Error on GetDTO request for  with code: %v", err)
 	} else {
 
-		eventAdded, id, err := service.AddEvent(e)
-		if eventAdded == false && err != nil {
+		eventAdded := service.EventService(e)
+
+		if !eventAdded {
 			c.AbortWithStatusJSON(http.StatusBadRequest, "400 - Error in request, no event created")
-			log.Printf("Error in servic.AddEvent(): %v", err)
+			log.Printf("Error in servic.addEvent(): %v", err)
 		} else {
 			c.JSON(http.StatusCreated, fmt.Sprintf("201 - New request received"))
-			log.Printf("New Event has ID: %d", id)
-			service.UpdateSendDate(id)
+			//log.Printf("New Event has ID: %d", id)
+			//service.updateSendDate(id)
 		}
 	}
 }

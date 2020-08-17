@@ -5,12 +5,14 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
-	"github.com/chrisp986/go-stagecoach/pkg/db"
-	"github.com/chrisp986/go-stagecoach/pkg/model"
 	"log"
 	mathRand "math/rand"
 	"regexp"
 	"strings"
+	"time"
+
+	"github.com/chrisp986/go-stagecoach/pkg/db"
+	"github.com/chrisp986/go-stagecoach/pkg/model"
 )
 
 //When we have data nicely loaded into our models, we can perform additional logic
@@ -24,21 +26,25 @@ import (
 
 func EventService(e model.Event) bool {
 
-	eventAdded, id, err := AddEvent(e)
-	if eventAdded == false && err != nil {
-		log.Printf("Error in servic.EventService(): %v", err)
+	eventAdded, id, err := addEvent(e)
+	if !eventAdded || err != nil {
+		log.Printf("Error in service.EventService(): %v", err)
 		return false
 	} else {
-		//c.JSON(http.StatusCreated, fmt.Sprintf("201 - New request received"))
+		//TODO create retry function
 		log.Printf("New Event created with ID: %d", id)
-
-		UpdateSendDate(id)
+		eventSent, err := updateSendDate(id)
+		if !eventSent || err != nil {
+			log.Printf("Error in updateSendDate() %v", err)
+			return false
+		}
+		checkMailSentInEventBuffer(id)
+		return true
 	}
-
 }
 
 // Add creates a new Event
-func AddEvent(e model.Event) (bool, uint32, error) {
+func addEvent(e model.Event) (bool, uint32, error) {
 
 	sqliteDB := db.GetDB()
 	var newEvent model.Event
@@ -54,7 +60,6 @@ func AddEvent(e model.Event) (bool, uint32, error) {
 
 	if !validateNotEmpty(e.Sender) || !validateNotEmpty(e.Receiver) || !validateNotEmpty(e.
 		Event) || !validateNotEmpty(e.Subtitle) || !validateNotEmpty(e.Body) || !validateNotEmpty(e.Template) {
-
 		return false, 0, errEmpty
 	}
 
@@ -80,7 +85,7 @@ func AddEvent(e model.Event) (bool, uint32, error) {
 		"template) VALUES(?, ?, ?, ?, ?, ?, ?)")
 
 	if err != nil {
-		log.Printf("Error in Prepare AddEvent() %v", err)
+		log.Printf("Error in Prepare addEvent() %v", err)
 		return false, 0, err
 	}
 
@@ -94,19 +99,43 @@ func AddEvent(e model.Event) (bool, uint32, error) {
 		newEvent.Template)
 
 	if err != nil {
-		log.Printf("Error on Exec in AddEvent(): %v", err)
+		log.Printf("Error on Exec in addEvent(): %v", err)
 		return false, 0, err
 	}
 
 	lastId, err := res.LastInsertId()
 	if err != nil {
-		log.Printf("Error on LastInsertId() in event AddEvent(): %v", err)
+		log.Printf("Error on LastInsertId() in event addEvent(): %v", err)
 		return false, 0, err
 	}
 	return true, uint32(lastId), err
 }
 
-func UpdateSendDate(id uint32) {
+func checkMailSentInEventBuffer(id uint32) {
+
+	sqliteDB := db.GetDB()
+	var e model.Event
+
+	err := sqliteDB.Get(&e, "SELECT id, unique_id, sender, receiver, event, "+
+		"template, created FROM event_buffer WHERE id= ? LIMIT 1", id)
+	if err != nil {
+		log.Printf("Error in checkMailSentInEventBuffer() %v", err)
+	}
+	dateCreated, err := time.Parse(time.RFC3339, e.Created)
+	if err != nil {
+		log.Printf("Error in time.Parse %v", dateCreated)
+	}
+
+	log.Printf("Event ID: %d  UniqueID: %s  Sender: %s  Receiver: %s  Event: %s  Template: %s",
+		e.ID,
+		e.UniqueID,
+		e.Sender,
+		e.Receiver,
+		e.Event,
+		e.Template)
+}
+
+func updateSendDate(id uint32) (bool, error) {
 
 	sqliteDB := db.GetDB()
 
@@ -115,22 +144,25 @@ func UpdateSendDate(id uint32) {
 
 	if err != nil {
 		log.Printf("Error in Prepare updateSendDate() %v", err)
-
+		return false, err
 	}
-
 	res, err := stmt.Exec(1, id)
 
 	if err != nil {
 		log.Printf("Error on Exec in updateSendDate(): %v", err)
+		return false, err
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
 		log.Printf("Error on RowsAffected() in event updateSendDate(): %v", err)
+		return false, err
 	}
-	if rowsAffected == 1 {
+	if rowsAffected != 0 {
 		log.Println("Mail has been sent!")
+		return true, err
 	}
+	return false, err
 }
 
 //createUID creates a unique ID based in the crypto/rand function, parameter is the size of the byte,
