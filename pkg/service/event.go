@@ -4,12 +4,13 @@ import (
 	cryptoRand "crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
-	"encoding/json"
+	"errors"
 	"github.com/chrisp986/go-stagecoach/pkg/db"
 	"github.com/chrisp986/go-stagecoach/pkg/model"
 	"log"
 	mathRand "math/rand"
-	"net/http"
+	"regexp"
+	"strings"
 )
 
 //When we have data nicely loaded into our models, we can perform additional logic
@@ -21,25 +22,28 @@ import (
 
 //Do extra logic with the data we got from the query or api
 
-type Event []model.Event
+func EventService(e model.Event) bool {
 
-type Adder interface {
-	Add(event model.Event) (id uint32, err error)
+	eventAdded, id, err := AddEvent(e)
+	if eventAdded == false && err != nil {
+		log.Printf("Error in servic.EventService(): %v", err)
+		return false
+	} else {
+		//c.JSON(http.StatusCreated, fmt.Sprintf("201 - New request received"))
+		log.Printf("New Event created with ID: %d", id)
+
+		UpdateSendDate(id)
+	}
+
 }
 
-type Buffer struct {
-	Events []model.Event
-}
+// Add creates a new Event
+func AddEvent(e model.Event) (bool, uint32, error) {
 
-func New() *Buffer {
-	return &Buffer{Events: []model.Event{}}
-}
-
-func (e *Buffer) AddEvent(event model.Event) {
-	e.Events = append(e.Events, event)
-}
-
-func NewEvent(event Adder) http.HandlerFunc {
+	sqliteDB := db.GetDB()
+	var newEvent model.Event
+	errEmail := errors.New("no valid Email address")
+	errEmpty := errors.New("field is empty")
 
 	c1 := make(chan string)
 
@@ -48,20 +52,84 @@ func NewEvent(event Adder) http.HandlerFunc {
 		c1 <- uid
 	}()
 
-	return func(w http.ResponseWriter, r *http.Request) {
-		request := map[string]string{}
+	if !validateNotEmpty(e.Sender) || !validateNotEmpty(e.Receiver) || !validateNotEmpty(e.
+		Event) || !validateNotEmpty(e.Subtitle) || !validateNotEmpty(e.Body) || !validateNotEmpty(e.Template) {
 
-		json.NewDecoder(r.Body).Decode(&request)
+		return false, 0, errEmpty
+	}
 
-		event.Add(model.Event{
-			UniqueID: <-c1,
-			Sender:   "testsender@uhf.com",
-			Receiver: "blkjsdjf@ijdsa.com",
-			Event:    "cr",
-			Subtitle: "subtitleniuenf",
-			Body:     "bodyiwejfw",
-			Template: 0,
-		})
+	if !validateEmail(e.Sender) {
+		log.Printf("%s is no valid Email", e.Sender)
+		return false, 0, errEmail
+	}
+
+	if !validateEmail(e.Receiver) {
+		log.Printf("%s is no valid Email", e.Receiver)
+		return false, 0, errEmail
+	}
+
+	newEvent.UniqueID = <-c1
+	newEvent.Sender = e.Sender
+	newEvent.Receiver = e.Receiver
+	newEvent.Event = e.Event
+	newEvent.Subtitle = e.Subtitle
+	newEvent.Body = e.Body
+	newEvent.Template = e.Template
+
+	stmt, err := sqliteDB.Prepare("INSERT INTO event_buffer(unique_id, sender, receiver, event, subtitle, body, " +
+		"template) VALUES(?, ?, ?, ?, ?, ?, ?)")
+
+	if err != nil {
+		log.Printf("Error in Prepare AddEvent() %v", err)
+		return false, 0, err
+	}
+
+	res, err := stmt.Exec(
+		newEvent.UniqueID,
+		newEvent.Sender,
+		newEvent.Receiver,
+		newEvent.Event,
+		newEvent.Subtitle,
+		newEvent.Body,
+		newEvent.Template)
+
+	if err != nil {
+		log.Printf("Error on Exec in AddEvent(): %v", err)
+		return false, 0, err
+	}
+
+	lastId, err := res.LastInsertId()
+	if err != nil {
+		log.Printf("Error on LastInsertId() in event AddEvent(): %v", err)
+		return false, 0, err
+	}
+	return true, uint32(lastId), err
+}
+
+func UpdateSendDate(id uint32) {
+
+	sqliteDB := db.GetDB()
+
+	stmt, err := sqliteDB.Prepare("UPDATE event_buffer SET sent_date = (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW'," +
+		"'localtime')), sent = ? WHERE id = ?")
+
+	if err != nil {
+		log.Printf("Error in Prepare updateSendDate() %v", err)
+
+	}
+
+	res, err := stmt.Exec(1, id)
+
+	if err != nil {
+		log.Printf("Error on Exec in updateSendDate(): %v", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Printf("Error on RowsAffected() in event updateSendDate(): %v", err)
+	}
+	if rowsAffected == 1 {
+		log.Println("Mail has been sent!")
 	}
 }
 
@@ -80,54 +148,18 @@ func createUID(n int) string {
 	return uid
 }
 
-// Add creates a new Event
-func (e Event) Add() (id uint32, err error) {
+func validateEmail(email string) bool {
+	var rxEmail = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
-	var event model.Event
-	sqliteDB := db.GetDB()
-
-	c1 := make(chan string)
-
-	go func() {
-		uid := createUID(16)
-		c1 <- uid
-	}()
-
-	event.UniqueID = <-c1
-	event.Sender = "test432@abs.com"
-	event.Receiver = "testreceiver@test123.com"
-	event.Event = "cr"
-	event.Subtitle = "subtitle"
-	event.Body = "testbody"
-	event.Template = 1
-
-	log.Println("Data to insert into event_buffer:", event)
-
-	stmt, err := sqliteDB.Prepare("INSERT INTO event_buffer(unique_id, sender, receiver, event, subtitle, body, " +
-		"template) VALUES(?, ?, ?, ?, ?, ?, ?)")
-
-	if err != nil {
-		log.Printf("Error in Prepare event.Add %v", err)
+	if len(email) > 254 || !rxEmail.MatchString(email) {
+		return false
 	}
+	return true
+}
 
-	res, err := stmt.Exec(
-		event.UniqueID,
-		event.Sender,
-		event.Receiver,
-		event.Event,
-		event.Subtitle,
-		event.Body,
-		event.Template)
-
-	if err != nil {
-		log.Printf("Error on Exec in event Add(): %v", err)
+func validateNotEmpty(value string) bool {
+	if strings.TrimSpace(value) == "" {
+		return false
 	}
-
-	lastId, err := res.LastInsertId()
-	if err != nil {
-		log.Printf("Error on LastInsertId() in event Add(): %v", err)
-	}
-	log.Printf("Event inserted with ID: %d", lastId)
-
-	return uint32(lastId), err
+	return true
 }
