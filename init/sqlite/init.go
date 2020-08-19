@@ -1,12 +1,13 @@
 package sqlite
 
 import (
-	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var sqlitePath = filepath.Join("internal", "sqlitedb", "sqlite_database.db")
@@ -106,10 +107,9 @@ var createTables = `CREATE TABLE IF NOT EXISTS event_buffer(
           unique_id TEXT NOT NULL UNIQUE,
 		  sender TEXT NOT NULL DEFAULT 'sender_default',
 		  receiver TEXT NOT NULL DEFAULT 'receiver_default',
-		  event TEXT NOT NULL DEFAULT 'event_default',
+		  template TEXT NOT NULL DEFAULT 'template_default',
 		  subtitle TEXT NOT NULL DEFAULT 'subtitle_default',
 		  body TEXT NOT NULL DEFAULT 'body_default',
-		  template INTEGER NOT NULL DEFAULT 0,
 		  created DATETIME NOT NULL DEFAULT (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW','localtime')),
 		  sent_date DATETIME NOT NULL DEFAULT '01-01-1970  00:00:00.000',
 		  sent INTEGER NOT NULL DEFAULT 0

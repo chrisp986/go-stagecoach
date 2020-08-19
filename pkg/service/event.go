@@ -24,23 +24,26 @@ import (
 
 //Do extra logic with the data we got from the query or api
 
+//EventService is taking a Event Struct and tries to send a mail
 func EventService(e model.Event) bool {
 
+	log.Println("--------------------------------")
 	eventAdded, id, err := addEvent(e)
 	if !eventAdded || err != nil {
 		log.Printf("Error in service.EventService(): %v", err)
 		return false
-	} else {
-		//TODO create retry function
-		log.Printf("New Event created with ID: %d", id)
-		eventSent, err := updateSendDate(id)
-		if !eventSent || err != nil {
-			log.Printf("Error in updateSendDate() %v", err)
-			return false
-		}
-		checkMailSentInEventBuffer(id)
-		return true
 	}
+	//TODO create retry function
+	log.Printf("New Event created with ID: %d", id)
+	log.Printf("Sender: %s   Receiver: %s", e.Sender, e.Receiver)
+	log.Printf("Template: %s", e.Template)
+	eventSent, err := updateSendDate(id)
+	if !eventSent || err != nil {
+		log.Printf("Error in updateSendDate() %v", err)
+		return false
+	}
+	checkMailSentInEventBuffer(id)
+	return true
 }
 
 // Add creates a new Event
@@ -58,8 +61,7 @@ func addEvent(e model.Event) (bool, uint32, error) {
 		c1 <- uid
 	}()
 
-	if !validateNotEmpty(e.Sender) || !validateNotEmpty(e.Receiver) || !validateNotEmpty(e.
-		Event) || !validateNotEmpty(e.Subtitle) || !validateNotEmpty(e.Body) || !validateNotEmpty(e.Template) {
+	if !validateNotEmpty(e.Sender) || !validateNotEmpty(e.Receiver) || !validateNotEmpty(e.Subtitle) || !validateNotEmpty(e.Body) || !validateNotEmpty(e.Template) {
 		return false, 0, errEmpty
 	}
 
@@ -76,13 +78,11 @@ func addEvent(e model.Event) (bool, uint32, error) {
 	newEvent.UniqueID = <-c1
 	newEvent.Sender = e.Sender
 	newEvent.Receiver = e.Receiver
-	newEvent.Event = e.Event
 	newEvent.Subtitle = e.Subtitle
 	newEvent.Body = e.Body
 	newEvent.Template = e.Template
 
-	stmt, err := sqliteDB.Prepare("INSERT INTO event_buffer(unique_id, sender, receiver, event, subtitle, body, " +
-		"template) VALUES(?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := sqliteDB.Prepare("INSERT INTO event_buffer(unique_id, sender, receiver, template, subtitle, body) VALUES(?, ?, ?, ?, ?, ?)")
 
 	if err != nil {
 		log.Printf("Error in Prepare addEvent() %v", err)
@@ -93,7 +93,6 @@ func addEvent(e model.Event) (bool, uint32, error) {
 		newEvent.UniqueID,
 		newEvent.Sender,
 		newEvent.Receiver,
-		newEvent.Event,
 		newEvent.Subtitle,
 		newEvent.Body,
 		newEvent.Template)
@@ -103,12 +102,12 @@ func addEvent(e model.Event) (bool, uint32, error) {
 		return false, 0, err
 	}
 
-	lastId, err := res.LastInsertId()
+	lastID, err := res.LastInsertId()
 	if err != nil {
 		log.Printf("Error on LastInsertId() in event addEvent(): %v", err)
 		return false, 0, err
 	}
-	return true, uint32(lastId), err
+	return true, uint32(lastID), err
 }
 
 func checkMailSentInEventBuffer(id uint32) {
@@ -116,8 +115,7 @@ func checkMailSentInEventBuffer(id uint32) {
 	sqliteDB := db.GetDB()
 	var e model.Event
 
-	err := sqliteDB.Get(&e, "SELECT id, unique_id, sender, receiver, event, "+
-		"template, created FROM event_buffer WHERE id= ? LIMIT 1", id)
+	err := sqliteDB.Get(&e, "SELECT id, unique_id, sender, receiver, template, created FROM event_buffer WHERE id= ? LIMIT 1", id)
 	if err != nil {
 		log.Printf("Error in checkMailSentInEventBuffer() %v", err)
 	}
@@ -125,14 +123,6 @@ func checkMailSentInEventBuffer(id uint32) {
 	if err != nil {
 		log.Printf("Error in time.Parse %v", dateCreated)
 	}
-
-	log.Printf("Event ID: %d  UniqueID: %s  Sender: %s  Receiver: %s  Event: %s  Template: %s",
-		e.ID,
-		e.UniqueID,
-		e.Sender,
-		e.Receiver,
-		e.Event,
-		e.Template)
 }
 
 func updateSendDate(id uint32) (bool, error) {

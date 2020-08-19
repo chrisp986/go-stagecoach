@@ -2,11 +2,12 @@ package dto
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/chrisp986/go-stagecoach/pkg/model"
 	"github.com/chrisp986/go-stagecoach/pkg/service"
 	"github.com/gin-gonic/gin"
-	"log"
-	"net/http"
 )
 
 //TODO Added client authentication and check that before accepting a DTO
