@@ -13,6 +13,7 @@ import (
 
 	"github.com/chrisp986/go-stagecoach/pkg/db"
 	"github.com/chrisp986/go-stagecoach/pkg/model"
+	"github.com/chrisp986/go-stagecoach/pkg/notification"
 )
 
 //When we have data nicely loaded into our models, we can perform additional logic
@@ -37,13 +38,22 @@ func EventService(e model.Event) bool {
 	log.Printf("New Event created with ID: %d", id)
 	log.Printf("Sender: %s   Receiver: %s", e.Sender, e.Receiver)
 	log.Printf("Template: %s", e.Template)
-	eventSent, err := updateSendDate(id)
-	if !eventSent || err != nil {
-		log.Printf("Error in updateSendDate() %v", err)
-		return false
+
+	// newMail := notification.Mail{SMTPServer: "smtp.mailtrap.io", Loginname: "ff294d19b4962d", Password: "e6387b1767782d", FromAddress: "test@test.com"}
+	// newMail.SendMail()
+
+	mailSent := notification.SendMail()
+
+	if mailSent {
+		eventSent, err := updateSendDate(id)
+		if !eventSent || err != nil {
+			log.Printf("Error in updateSendDate() %v", err)
+			return false
+		}
+		checkMailSentInEventBuffer(id)
+		return true
 	}
-	checkMailSentInEventBuffer(id)
-	return true
+	return false
 }
 
 // Add creates a new Event
