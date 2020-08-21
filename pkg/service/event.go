@@ -39,9 +39,6 @@ func EventService(e model.Event) bool {
 	log.Printf("Sender: %s   Receiver: %s", e.Sender, e.Receiver)
 	log.Printf("Template: %s", e.Template)
 
-	// newMail := notification.Mail{SMTPServer: "smtp.mailtrap.io", Loginname: "ff294d19b4962d", Password: "e6387b1767782d", FromAddress: "test@test.com"}
-	// newMail.SendMail()
-
 	mailSent := notification.SendMail()
 
 	if mailSent {
