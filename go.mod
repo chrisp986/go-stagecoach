@@ -8,4 +8,5 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.1
 	github.com/xhit/go-simple-mail/v2 v2.5.1
 	gopkg.in/yaml.v2 v2.2.8
+
 )
