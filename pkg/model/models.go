@@ -5,12 +5,11 @@ type Event struct {
 	UniqueID string `json:"unique_id,omitempty" db:"unique_id"`
 	Sender   string `json:"sender,omitempty" db:"sender"`
 	Receiver string `json:"receiver,omitempty" db:"receiver"`
-	Event    string `json:"event,omitempty" db:"event"`
+	Template string `json:"template,omitempty" db:"template"`
 	Subtitle string `json:"subtitle,omitempty" db:"subtitle"`
 	Body     string `json:"body,omitempty" db:"body"`
-	Template string `json:"template,omitempty" db:"template"`
 	Created  string `json:"created" db:"created"`
-	SentDate string `json:"sent,omitempty" db:"sent"`
+	SentDate string `json:"sentdate,omitempty" db:"sent"`
 	Sent     int    `json:"sent,omitempty" db:"sent"`
 }
 

@@ -1,10 +1,11 @@
 package v1
 
 import (
-	"github.com/chrisp986/go-stagecoach/pkg/dao"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/chrisp986/go-stagecoach/pkg/dao"
 
 	"github.com/gin-gonic/gin"
 )

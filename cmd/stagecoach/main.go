@@ -23,12 +23,13 @@
 package main
 
 import (
+	"log"
+
 	"github.com/chrisp986/go-stagecoach/init/sqlite"
 	"github.com/chrisp986/go-stagecoach/pkg/api"
 	"github.com/chrisp986/go-stagecoach/pkg/db"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
-	"log"
 )
 
 var sqliteDB *sqlx.DB
@@ -36,7 +37,7 @@ var initDone bool
 var msg string
 
 func init() {
-	log.Println("->> Stagecoach v0.1 <<-")
+	log.Println("->> Stagecoach v0.2.28 <<-")
 	log.Println("-----------------------")
 
 	msg, initDone = sqlite.InitiateDatabase()
@@ -46,7 +47,7 @@ func init() {
 	log.Println("Connection to db established.")
 
 	if initDone {
-		log.Println("Initialization completed. Starting Server.")
+		log.Println("Initialization completed. Starting Server on Port :8080")
 		api.RunServer() // Start Gin Server
 	}
 }
