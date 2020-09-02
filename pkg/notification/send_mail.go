@@ -13,11 +13,11 @@ var (
 	htmlBody = `<html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>Hello Gophers!</title>
+		<title>StageCoach!</title>
 	</head>
 		<body>
-			<p>This is the <b>Go gopher</b>.</p>
-			<p>Image created by Renee French</p>
+			<p>This is a mail sent by <a href="https://github.com/chrisp986/go-stagecoach">Stagecoach!</a></p>
+			<p>Made by chrisp986</p>
 		</body>
 	</html>`
 )
@@ -25,9 +25,9 @@ var (
 //SendMail takes sender mail config and takes data that needs to be sent vie smtp
 func SendMail() bool {
 
-	smtpServer := os.Getenv("mailtrap_smtp")
-	username := os.Getenv("mailtrap_user")
-	password := os.Getenv("mailtrap_pw")
+	smtpServer := os.Getenv("toy_smtp")
+	username := os.Getenv("toy_user")
+	password := os.Getenv("toy_pw")
 
 	client := mail.NewSMTPClient()
 

@@ -8,9 +8,10 @@ as a side project the progress might be slow since Go is also quite new to me. I
 
 ## Dependencies
 
-SQLite - Stores events and mail addresses
-SQLX - Addition to the database/sql package
-Gin - Implementation of REST API
+- SQLite - As data storage
+- SQLX - Addition to the standard database/sql package
+- Gin - Implementation of REST API and webservice
+- Simple Mail - Sending mails
 
 
 
@@ -19,11 +20,12 @@ Gin - Implementation of REST API
 | Task           | Current Status | Finished | 
 |----------------|----------------|-----------|
 | Initialize SQLiteDB | done | :white_check_mark:
-| Access DB (CRUD)   | in progress | :ballot_box_with_check:
+| Access DB (CRUD)   | done  | :white_check_mark:
 | REST API(gin)   | in progress | :ballot_box_with_check:
 | Testing/Benchmark  | in progress | :ballot_box_with_check:
-| Mail Service  | planed | :ballot_box_with_check:
+| Mail Service  | in progress | :ballot_box_with_check:
 | Client Authentication  | planed | :ballot_box_with_check:
+| Webservice  | in progress | :ballot_box_with_check:
 | -  | - | -
 
 

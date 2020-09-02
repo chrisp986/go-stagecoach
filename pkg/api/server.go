@@ -2,18 +2,20 @@ package api
 
 import (
 	"context"
-	v1 "github.com/chrisp986/go-stagecoach/pkg/api/v1"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	v1 "github.com/chrisp986/go-stagecoach/pkg/api/v1"
+	"github.com/gin-gonic/gin"
 )
 
 func RunServer() {
 
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
 	v1.ApplyRoutes(r)

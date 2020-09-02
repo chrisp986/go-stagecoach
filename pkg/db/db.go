@@ -1,9 +1,10 @@
 package db
 
 import (
-	"github.com/jmoiron/sqlx"
 	"log"
 	"path/filepath"
+
+	"github.com/jmoiron/sqlx"
 )
 
 var sqliteDB *sqlx.DB
