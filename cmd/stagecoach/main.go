@@ -37,7 +37,7 @@ var initDone bool
 var msg string
 
 func init() {
-	log.Println("->> Stagecoach v0.2.31 <<-")
+	log.Println("->> Stagecoach v0.2.37 <<-")
 	log.Println("-----------------------")
 
 	msg, initDone = sqlite.InitiateDatabase()
