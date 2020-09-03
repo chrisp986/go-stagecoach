@@ -135,31 +135,60 @@ func checkMailSentInEventBuffer(id uint32) {
 func updateSendDate(id uint32) (bool, error) {
 
 	sqliteDB := db.GetDB()
-
-	stmt, err := sqliteDB.Prepare("UPDATE event_buffer SET sent_date = (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW'," +
-		"'localtime')), sent = ? WHERE id = ?")
+	tx, err := sqliteDB.Begin()
 
 	if err != nil {
-		log.Printf("Error in Prepare updateSendDate() %v", err)
-		return false, err
-	}
-	res, err := stmt.Exec(1, id)
-
-	if err != nil {
-		log.Printf("Error on Exec in updateSendDate(): %v", err)
 		return false, err
 	}
 
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		log.Printf("Error on RowsAffected() in event updateSendDate(): %v", err)
-		return false, err
-	}
-	if rowsAffected != 0 {
-		log.Println("Mail has been sent!")
-		return true, err
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit()
+		default:
+			tx.Rollback()
+		}
+	}()
+
+	if res, err := tx.Exec("UPDATE event_buffer SET sent_date = (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW',"+
+		"'localtime')), sent = ? WHERE id = ?", 1, id); err != nil {
+
+		rowsAffected, err := res.RowsAffected()
+		if err != nil {
+			log.Printf("Error on RowsAffected() in event updateSendDate(): %v", err)
+			return false, err
+		}
+		if rowsAffected != 0 {
+			log.Println("Mail has been sent!")
+			return true, err
+		}
 	}
 	return false, err
+
+	// stmt, err := sqliteDB.Prepare("UPDATE event_buffer SET sent_date = (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW'," +
+	// 	"'localtime')), sent = ? WHERE id = ?")
+
+	// if err != nil {
+	// 	log.Printf("Error in Prepare updateSendDate() %v", err)
+	// 	return false, err
+	// }
+	// res, err := stmt.Exec(1, id)
+
+	// if err != nil {
+	// 	log.Printf("Error on Exec in updateSendDate(): %v", err)
+	// 	return false, err
+	// }
+
+	// rowsAffected, err := res.RowsAffected()
+	// if err != nil {
+	// 	log.Printf("Error on RowsAffected() in event updateSendDate(): %v", err)
+	// 	return false, err
+	// }
+	// if rowsAffected != 0 {
+	// 	log.Println("Mail has been sent!")
+	// 	return true, err
+	// }
+	// return false, err
 }
 
 //createUID creates a unique ID based in the crypto/rand function, parameter is the size of the byte,
