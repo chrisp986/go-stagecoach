@@ -13,7 +13,6 @@ import (
 
 	"github.com/chrisp986/go-stagecoach/pkg/db"
 	"github.com/chrisp986/go-stagecoach/pkg/model"
-	"github.com/chrisp986/go-stagecoach/pkg/notification"
 )
 
 //When we have data nicely loaded into our models, we can perform additional logic
@@ -39,18 +38,22 @@ func EventService(e model.Event) bool {
 	log.Printf("Sender: %s   Receiver: %s", e.Sender, e.Receiver)
 	log.Printf("Template: %s", e.Template)
 
-	mailSent := notification.SendMail()
+	//TODO redo the SendMail() function to not block the event service
+	// notification.SendMail()
+	// mailSent := notification.SendMail()
 
-	if mailSent {
-		eventSent, err := updateSendDate(id)
-		if !eventSent || err != nil {
-			log.Printf("Error in updateSendDate() %v", err)
-			return false
-		}
-		checkMailSentInEventBuffer(id)
-		return true
-	}
-	return false
+	// if mailSent {
+	// 	eventSent, err := updateSendDate(id)
+	// 	if !eventSent || err != nil {
+	// 		log.Printf("Error in updateSendDate() %v", err)
+	// 		return false
+	// 	}
+	// 	checkMailSentInEventBuffer(id)
+	// 	return true
+	// }
+	// return false
+
+	return true
 }
 
 // Add creates a new Event
@@ -126,6 +129,7 @@ func checkMailSentInEventBuffer(id uint32) {
 	if err != nil {
 		log.Printf("Error in checkMailSentInEventBuffer() %v", err)
 	}
+
 	dateCreated, err := time.Parse(time.RFC3339, e.Created)
 	if err != nil {
 		log.Printf("Error in time.Parse %v", dateCreated)
@@ -135,60 +139,60 @@ func checkMailSentInEventBuffer(id uint32) {
 func updateSendDate(id uint32) (bool, error) {
 
 	sqliteDB := db.GetDB()
-	tx, err := sqliteDB.Begin()
+	// tx, err := sqliteDB.Begin()
+
+	// if err != nil {
+	// 	return false, err
+	// }
+
+	// defer func() {
+	// 	switch err {
+	// 	case nil:
+	// 		err = tx.Commit()
+	// 	default:
+	// 		tx.Rollback()
+	// 	}
+	// }()
+
+	// if res, err := tx.Exec("UPDATE event_buffer SET sent_date = (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW',"+
+	// 	"'localtime')), sent = ? WHERE id = ?", 1, id); err != nil {
+
+	// 	rowsAffected, err := res.RowsAffected()
+	// 	if err != nil {
+	// 		log.Printf("Error on RowsAffected() in event updateSendDate(): %v", err)
+	// 		return false, err
+	// 	}
+	// 	if rowsAffected != 0 {
+	// 		log.Println("Mail has been sent!")
+	// 		return true, err
+	// 	}
+	// }
+	// return false, err
+
+	stmt, err := sqliteDB.Prepare("UPDATE event_buffer SET sent = (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW'," +
+		"'localtime')), WHERE id = ?")
 
 	if err != nil {
+		log.Printf("Error in Prepare updateSendDate() %v", err)
+		return false, err
+	}
+	res, err := stmt.Exec(id)
+
+	if err != nil {
+		log.Printf("Error on Exec in updateSendDate(): %v", err)
 		return false, err
 	}
 
-	defer func() {
-		switch err {
-		case nil:
-			err = tx.Commit()
-		default:
-			tx.Rollback()
-		}
-	}()
-
-	if res, err := tx.Exec("UPDATE event_buffer SET sent_date = (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW',"+
-		"'localtime')), sent = ? WHERE id = ?", 1, id); err != nil {
-
-		rowsAffected, err := res.RowsAffected()
-		if err != nil {
-			log.Printf("Error on RowsAffected() in event updateSendDate(): %v", err)
-			return false, err
-		}
-		if rowsAffected != 0 {
-			log.Println("Mail has been sent!")
-			return true, err
-		}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Printf("Error on RowsAffected() in event updateSendDate(): %v", err)
+		return false, err
+	}
+	if rowsAffected != 0 {
+		log.Println("Mail has been sent!")
+		return true, err
 	}
 	return false, err
-
-	// stmt, err := sqliteDB.Prepare("UPDATE event_buffer SET sent_date = (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW'," +
-	// 	"'localtime')), sent = ? WHERE id = ?")
-
-	// if err != nil {
-	// 	log.Printf("Error in Prepare updateSendDate() %v", err)
-	// 	return false, err
-	// }
-	// res, err := stmt.Exec(1, id)
-
-	// if err != nil {
-	// 	log.Printf("Error on Exec in updateSendDate(): %v", err)
-	// 	return false, err
-	// }
-
-	// rowsAffected, err := res.RowsAffected()
-	// if err != nil {
-	// 	log.Printf("Error on RowsAffected() in event updateSendDate(): %v", err)
-	// 	return false, err
-	// }
-	// if rowsAffected != 0 {
-	// 	log.Println("Mail has been sent!")
-	// 	return true, err
-	// }
-	// return false, err
 }
 
 //createUID creates a unique ID based in the crypto/rand function, parameter is the size of the byte,
@@ -198,6 +202,7 @@ func createUID(n int) string {
 	_, err := cryptoRand.Read(b[:])
 	if err != nil {
 		log.Println(err)
+		//TODO add error and stop proceeding
 	}
 
 	mathRand.Seed(int64(binary.LittleEndian.Uint64(b[:])))
@@ -206,6 +211,10 @@ func createUID(n int) string {
 	return uid
 }
 
+//validateEmail checks with regexp if the sendermail and receivermail is a has the correct format to be a real mail address
+//Output:
+//not valid -> false
+//valid -> true
 func validateEmail(email string) bool {
 	var rxEmail = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
@@ -215,6 +224,10 @@ func validateEmail(email string) bool {
 	return true
 }
 
+//validateNotEmpty checks that the string is not empty and returns a boolean
+//Output:
+//empty -> false
+//not empty -> true
 func validateNotEmpty(value string) bool {
 	if strings.TrimSpace(value) == "" {
 		return false

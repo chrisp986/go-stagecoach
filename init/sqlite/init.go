@@ -7,35 +7,30 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var sqlitePath = filepath.Join("internal", "sqlitedb", "sqlite_database.db")
 
+//InitiateDatabase creates the directory, sqlite db file and the tables in the database
 func InitiateDatabase() (msg string, initDone bool) {
 
 	log.Println("Start initializing.")
-	var sqliteDB *sqlx.DB
 	initDone = false
 
+	createSQLiteDB()
+	createSQLiteTable(createTables)
+
 	if !fileExist(sqlitePath) {
-		createSQLiteDB()
-		sqliteDB, _ = sqlx.Open("sqlite3", sqlitePath)
-		defer sqliteDB.Close()
-
-		tablesCreated := createSQLiteTable(createTables)
-
-		if tablesCreated {
-			return "SQLite db created, initialization done.", true
-		}
+		return "Error during initialization", false
 	}
-	return "SQLite db already exists, skipping creation.", true
+	return "Database ready.", true
+
 }
 
 //Check if the db already exists, will not check for tables
 func fileExist(name string) bool {
-	_, err := os.Stat(name)
-	if err != nil {
+
+	if _, err := os.Stat(name); os.IsNotExist(err) {
 		return false
 	}
 	return true
@@ -47,40 +42,35 @@ func createSQLiteDB() (msg string, dbCreated bool) {
 
 	log.Println("Initialize SQLite db.")
 
-	dbDirExist := createDBPath()
+	createDBPath()
 
-	if dbDirExist {
-		file, err := os.Create(sqlitePath)
-		if err != nil {
-			log.Printf("Error while creating SQLite db %v.", err)
-		}
-		defer file.Close()
+	file, err := os.OpenFile(sqlitePath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+	defer file.Close()
 
-		return "SQLite directory and db created.", true
+	if err != nil {
+		return "SQLite db already exists, skipping creation.", false
 	}
-	return "SQLite directory and db could not be created.", false
+	return "SQLite directory and db created.", true
 }
 
-func createDBPath() bool {
+func createDBPath() {
 
 	dbPath := filepath.Join("internal", "sqlitedb")
 	err := os.MkdirAll(dbPath, os.ModePerm)
 	if err != nil {
-		log.Printf("Error while creating SQLite directory %v", dbPath)
-		return false
+		log.Printf("Error while creating SQLite directory, stopping application %v", dbPath)
+		os.Exit(2)
 	}
-	log.Println("Directory for SQLite db created.")
-	return true
 }
 
 //Creates the tables in the SQLite
-func createSQLiteTable(query string) bool {
+func createSQLiteTable(query string) {
 
 	db, err := sqlx.Open("sqlite3", sqlitePath)
 	if err != nil {
 		log.Printf("Error while opening SQLiteDB in createSQLiteTable(): %v.", err)
-		return false
 	}
+	defer db.Close()
 
 	stmts := strings.Split(query, ";\n")
 	if len(strings.Trim(stmts[len(stmts)-1], " \n\t\r")) == 0 {
@@ -89,11 +79,10 @@ func createSQLiteTable(query string) bool {
 	for _, s := range stmts {
 		_, err := db.Exec(s)
 		if err != nil {
-			log.Printf("Error while creating table %v.", err)
-			return false
+			log.Printf("Error while creating table, stopping application %v.", err)
+			os.Exit(2)
 		}
 	}
-	return true
 }
 
 //DATA FOR TESTING
@@ -111,8 +100,8 @@ var createTables = `CREATE TABLE IF NOT EXISTS event_buffer(
 		  subtitle TEXT NOT NULL DEFAULT 'subtitle_default',
 		  body TEXT NOT NULL DEFAULT 'body_default',
 		  created DATETIME NOT NULL DEFAULT (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW','localtime')),
-		  sent_date DATETIME NOT NULL DEFAULT '01-01-1970  00:00:00.000',
-		  sent INTEGER NOT NULL DEFAULT 0
+		  dispatch DATETIME NOT NULL DEFAULT (STRFTIME('%d-%m-%Y  %H:%M:%f', 'NOW','localtime')),
+		  sent DATETIME NOT NULL DEFAULT '01-01-1970  00:00:00.000'
 		);
 
 		CREATE TABLE IF NOT EXISTS mail_address(

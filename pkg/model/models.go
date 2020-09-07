@@ -9,8 +9,8 @@ type Event struct {
 	Subtitle string `json:"subtitle,omitempty" db:"subtitle"`
 	Body     string `json:"body,omitempty" db:"body"`
 	Created  string `json:"created" db:"created"`
-	SentDate string `json:"sentdate,omitempty" db:"sent"`
-	Sent     int    `json:"sent,omitempty" db:"sent"`
+	Dispatch string `json:"dispatch" db:"dispatch"`
+	Sent     string `json:"sentdate,omitempty" db:"sent"`
 }
 
 type MailAddress struct {

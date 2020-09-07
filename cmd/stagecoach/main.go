@@ -41,61 +41,20 @@ func init() {
 	log.Println("-----------------------")
 
 	msg, initDone = sqlite.InitiateDatabase()
-	log.Println(msg)
 
 	db.ConnectDB() // Connect to SQLite DB
 	log.Println("Connection to db established.")
 
-	if initDone {
-		log.Println("Initialization completed. Starting Server on Port :8080")
-		api.RunServer() // Start Gin Server
+	if !initDone {
+		log.Fatalln(msg)
 	}
+	log.Println("Initialization completed. Starting Server on Port :8080")
+	api.RunServer() // Start Gin Server
 }
 
 func main() {
 
 	sqliteDB = db.GetDB()
 	defer sqliteDB.Close() //Close connection when main() stops
-
-	//se := service.Event{}
-	//err := se.Add()
-	//if err != nil {
-	//	log.Printf("Error in event.Add(): %v", err)
-	//}
-
-	//model, err := se.GetDAO(sqliteDB, 3)
-	//if err != nil {
-	//	log.Printf("Error in event.GetDAO(): %v", err)
-	//}
-
-	//es := service.Event{}
-	//model, err := es.GetDAO(sqliteDB, 1)
-	//log.Println(model)
-
-	//eb := db.EventBuffer{
-	//	UUID:     123456,
-	//	Sender:   3,
-	//	Receiver: 12,
-	//	Event:    0,
-	//	Subtitle: "testsub",
-	//	Body:     "testbody",
-	//	Template: 1,
-	//}
-	//
-	//eb.AddEvent(sqliteDB)
-	//
-	//ma := db.MailAddress{
-	//	MailAddress: "test@test.com",
-	//	FirstName:   "Christian",
-	//	Name:        "Peters",
-	//	Status:      0,
-	//}
-	//ma.AddMailAddress(sqliteDB)
-	//
-	//mt := db.MsgTemplate{
-	//	MsgSubtitle: "testsubtitle",
-	//	MsgBody:     "testbody",
-	//}
-	//mt.AddMsgTemplate(sqliteDB)
 
 }
